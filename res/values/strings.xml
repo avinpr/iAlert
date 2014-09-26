@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- Config entries -->
-	<string name="ford_app_id">438316430</string>
+	<string name="ford_app_id">438316431</string>
     <string name="ford_dealer_url_template">http://www.ford.com/core-services/dealers/byzipcode.json?zipCode=ZIP_CODE&amp;distance=50&amp;pageSize=1&amp;pageIndex=1</string>
     
     <!-- App strings -->
