@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ialert"
+    android:versionCode="5"
+    android:versionName="3.11" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="13" />
+
+    <application
+        android:name="com.ialert.applink.AppLinkApplication"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+        >
+        <activity
+            android:name="com.ialert.activity.MainActivity"
+            android:label="@string/title_activity_main" 
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.ialert.activity.LockScreenActivity"
+            android:label="Lock Screen"
+            android:screenOrientation="portrait" >
+        </activity>
+
+        <service android:name="com.ialert.applink.AppLinkService" >
+        </service>
+
+        <receiver android:name="com.ialert.applink.AppLinkReceiver" >
+            <intent-filter>
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required to check if WiFi is enabled -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    
+
+</manifest>
