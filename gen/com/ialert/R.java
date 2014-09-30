@@ -50,6 +50,7 @@ public final class R {
         public static final int imageView2=0x7f090004;
         public static final int main_textView1=0x7f090001;
         public static final int reset=0x7f090005;
+        public static final int tdk=0x7f090007;
         public static final int textView1=0x7f090003;
     }
     public static final class layout {
@@ -77,6 +78,12 @@ public final class R {
         public static final int main_screen_button=0x7f06000a;
         public static final int main_screen_text=0x7f060009;
         public static final int main_string=0x7f060007;
+        /**  Menu options  
+         */
+        public static final int menu_about=0x7f060012;
+        public static final int menu_reset=0x7f060013;
+        public static final int menu_run_in_tdk=0x7f060014;
+        public static final int menu_tdk_toast_message=0x7f060015;
         public static final int reset=0x7f060006;
         public static final int title_activity_main=0x7f060005;
         public static final int welcome_message=0x7f06000d;

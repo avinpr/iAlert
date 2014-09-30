@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ford.syncV4.exception.SyncException;
 import com.ford.syncV4.exception.SyncExceptionCause;
@@ -101,7 +102,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	private double mLatitude;
 	private double mLongitude;
 	
-	private final boolean RUN_IN_ALE = true;
+	private boolean RUN_IN_ALE = false;
 
 	private int THREAD_SLEEP = 2000;
 
@@ -185,9 +186,11 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	}
 	/************** End Utility Functions ****************/
 	
+	@SuppressWarnings("static-access")
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		RUN_IN_ALE = !AppLinkApplication.getInstance().getRunInTdk();
 		instance = this;
 	}
 	
@@ -253,6 +256,8 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				else if(!isAppRunningInEmulator()){
 					proxy = new SyncProxyALM(this, getStr(R.string.app_name),
 							true, getStr(R.string.ford_app_id));
+				} else {
+					Toast.makeText(AppLinkApplication.getCurrentActivity().getBaseContext(), "App is running in an emulator and not connecting to the ALE.\nThis doesn't make sense", Toast.LENGTH_LONG).show();
 				}
 			} catch (SyncException e) {
 				e.printStackTrace();

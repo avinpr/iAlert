@@ -17,6 +17,7 @@ public class AppLinkApplication extends Application {
 	public static final String TAG = "iAlert"; // Global TAG used in logging
 	private static AppLinkApplication instance;
 	private static Activity currentUIActivity;
+	private static boolean mRunInTdk;
 	
 	static {
 		instance = null;
@@ -28,6 +29,14 @@ public class AppLinkApplication extends Application {
 	
 	public static synchronized AppLinkApplication getInstance() {
 		return instance;
+	}
+	
+	public static synchronized void setRunInTdk(boolean runInTdk){
+		mRunInTdk = runInTdk;
+	}
+	
+	public static synchronized boolean getRunInTdk(){
+		return mRunInTdk;
 	}
 	
 	public static synchronized void setCurrentActivity(Activity act) {

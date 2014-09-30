@@ -39,7 +39,8 @@ public class MainActivity extends AppLinkActivity {
         return true;
     }
     
-    @Override
+    @SuppressWarnings("static-access")
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
 	    switch (item.getItemId()) {
@@ -49,6 +50,10 @@ public class MainActivity extends AppLinkActivity {
 	        case R.id.about:
 	        	AppLinkApplication.getInstance().showAppVersion(this);
 	            return true;
+	        case R.id.tdk:
+	        	Toast.makeText(this, R.string.menu_tdk_toast_message, Toast.LENGTH_LONG).show();
+	        	AppLinkApplication.getInstance().setRunInTdk(true);
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
