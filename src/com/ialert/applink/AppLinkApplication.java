@@ -65,7 +65,9 @@ public class AppLinkApplication extends Application {
         // If BT adapter exists, is enabled, and there are paired devices, start service/proxy
         if (mBtAdapter != null)
 		{
-			if ((mBtAdapter.isEnabled() && mBtAdapter.getBondedDevices().isEmpty() == false)) 
+			if ((mBtAdapter.isEnabled() 
+					&& mBtAdapter.getBondedDevices() != null 
+					&& !mBtAdapter.getBondedDevices().isEmpty())) 
 			{
 				startApplinkService();
 			} else{

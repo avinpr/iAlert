@@ -17,6 +17,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -27,11 +30,14 @@ import android.widget.Toast;
 import com.ford.syncV4.exception.SyncException;
 import com.ford.syncV4.exception.SyncExceptionCause;
 import com.ford.syncV4.proxy.SyncProxyALM;
+import com.ford.syncV4.proxy.TTSChunkFactory;
 import com.ford.syncV4.proxy.interfaces.IProxyListenerALM;
 import com.ford.syncV4.proxy.rpc.AddCommandResponse;
 import com.ford.syncV4.proxy.rpc.AddSubMenuResponse;
 import com.ford.syncV4.proxy.rpc.AlertResponse;
 import com.ford.syncV4.proxy.rpc.ChangeRegistrationResponse;
+import com.ford.syncV4.proxy.rpc.Choice;
+import com.ford.syncV4.proxy.rpc.CreateInteractionChoiceSet;
 import com.ford.syncV4.proxy.rpc.CreateInteractionChoiceSetResponse;
 import com.ford.syncV4.proxy.rpc.DeleteCommandResponse;
 import com.ford.syncV4.proxy.rpc.DeleteFileResponse;
@@ -56,6 +62,7 @@ import com.ford.syncV4.proxy.rpc.OnSyncPData;
 import com.ford.syncV4.proxy.rpc.OnTBTClientState;
 import com.ford.syncV4.proxy.rpc.OnVehicleData;
 import com.ford.syncV4.proxy.rpc.PerformAudioPassThruResponse;
+import com.ford.syncV4.proxy.rpc.PerformInteraction;
 import com.ford.syncV4.proxy.rpc.PerformInteractionResponse;
 import com.ford.syncV4.proxy.rpc.PutFileResponse;
 import com.ford.syncV4.proxy.rpc.ReadDIDResponse;
@@ -74,12 +81,18 @@ import com.ford.syncV4.proxy.rpc.SpeakResponse;
 import com.ford.syncV4.proxy.rpc.SubscribeButtonResponse;
 import com.ford.syncV4.proxy.rpc.SubscribeVehicleDataResponse;
 import com.ford.syncV4.proxy.rpc.SyncPDataResponse;
+import com.ford.syncV4.proxy.rpc.TTSChunk;
 import com.ford.syncV4.proxy.rpc.UnsubscribeButtonResponse;
 import com.ford.syncV4.proxy.rpc.UnsubscribeVehicleDataResponse;
+import com.ford.syncV4.proxy.rpc.VrHelpItem;
+import com.ford.syncV4.proxy.rpc.enums.AudioStreamingState;
 import com.ford.syncV4.proxy.rpc.enums.ButtonEventMode;
 import com.ford.syncV4.proxy.rpc.enums.ButtonName;
 import com.ford.syncV4.proxy.rpc.enums.ComponentVolumeStatus;
+import com.ford.syncV4.proxy.rpc.enums.InteractionMode;
+import com.ford.syncV4.proxy.rpc.enums.Result;
 import com.ford.syncV4.proxy.rpc.enums.SoftButtonType;
+import com.ford.syncV4.proxy.rpc.enums.SpeechCapabilities;
 import com.ford.syncV4.proxy.rpc.enums.SystemAction;
 import com.ford.syncV4.proxy.rpc.enums.TextAlignment;
 import com.ford.syncV4.transport.TCPTransportConfig;
@@ -95,6 +108,8 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	private BluetoothAdapter mBtAdapter;
 	// variable to create and call functions of the SyncProxy
 	private SyncProxyALM proxy = null;
+	
+	private MediaPlayer mMediaPlayer;
 	
 	private final int YES = 1000;
 	private final int NO = 1001;
@@ -317,6 +332,73 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 			proxy.subscribeButton(ButtonName.PRESET_0, autoIncCorrId++);*/
 		} catch (SyncException e) {}
 	}
+	
+	public void sampleCreateChoiceSet()
+	{
+	    int corrId = autoIncCorrId++;
+
+	    Vector<Choice> commands = new Vector<Choice>();
+	    Choice one = new Choice();
+	    one.setChoiceID(99);
+	    one.setMenuName("Choice One");
+	    Vector<String> vrCommands = new Vector<String>();
+	    vrCommands.add("Choice 1");
+	    vrCommands.add("Choice 1 Alias 1");
+	    vrCommands.add("Choice 1 Alias 2");
+	    one.setVrCommands(vrCommands);
+
+	    //icon shown to the left on a choice set item
+	    /*Image image = new Image();
+	    image.setImageType(ImageType.STATIC);
+	    image.setValue("0x89");
+	    one.setImage(image);*/
+	    commands.add(one);
+
+	    Choice two = new Choice();
+	    two.setChoiceID(100);
+	    two.setMenuName("Choice Two");
+	    Vector<String> vrCommands2 = new Vector<String>();
+	    vrCommands2.add("Choice 2");
+	    vrCommands2.add("Choice 2 Alias 1");
+	    vrCommands2.add("Choice 2 Alias 2");
+	    two.setVrCommands(vrCommands2);
+
+	    /*Image image2 = new Image();
+	    image2.setImageType(ImageType.STATIC);
+	    image2.setValue("0x89");
+	    two.setImage(image2);*/
+	    commands.add(two);
+
+	    //Build Request and send to proxy object:
+	    CreateInteractionChoiceSet msg = new CreateInteractionChoiceSet();
+	    msg.setCorrelationID(corrId);
+	    int choiceSetID = 101;
+	    msg.setInteractionChoiceSetID(choiceSetID);
+	    msg.setChoiceSet(commands);
+
+	    try {
+	        proxy.sendRPCRequest(msg);
+	    }
+	    catch (SyncException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	private void playAudio(){
+		mMediaPlayer = MediaPlayer.create(AppLinkApplication.getCurrentActivity().getBaseContext(), R.raw.jingle);
+		mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		mMediaPlayer.setOnCompletionListener(new OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+            	/*proxy.speak(getStr(R.string.welcome_message),
+						autoIncCorrId++);*/
+				sampleCreateChoiceSet();
+            }
+
+            });
+		mMediaPlayer.start();
+	}
    
 	@Override
 	public void onProxyClosed(String info, Exception e) {
@@ -345,8 +427,8 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 			default:
 				return;
 		}
-
-		switch(notification.getAudioStreamingState()) {
+		AudioStreamingState state = notification.getAudioStreamingState();
+		switch(state) {
 			case AUDIBLE:
 				// play audio if applicable
 				break;
@@ -356,7 +438,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 			default:
 				return;
 		}
-
+		
 		LockScreenManager.setHMILevelState(notification.getHmiLevel());
 		LockScreenManager.updateLockScreen();
 		  
@@ -367,8 +449,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 					// setup app on SYNC
 					// send welcome message if applicable
 					try {
-						proxy.speak(getStr(R.string.welcome_message),
-								autoIncCorrId++);
+						playAudio();
+						/*proxy.speak(getStr(R.string.welcome_message),
+								autoIncCorrId++);*/
 						proxy.show(getStr(R.string.welcome_screen_message_1),
 								getStr(R.string.welcome_screen_message_2),
 								TextAlignment.CENTERED, autoIncCorrId++);
@@ -381,7 +464,13 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				}
 				else {
 					try {
-						proxy.show("SyncProxy is", "Alive", TextAlignment.CENTERED, autoIncCorrId++);
+						//proxy.show("SyncProxy is", "Alive", TextAlignment.CENTERED, autoIncCorrId++);
+						playAudio();
+						/*proxy.speak(getStr(R.string.welcome_message),
+								autoIncCorrId++);*/
+						proxy.show(getStr(R.string.welcome_screen_message_1),
+								getStr(R.string.welcome_screen_message_2),
+								TextAlignment.CENTERED, autoIncCorrId++);
 					} catch (SyncException e) {
 						DebugTool.logError("Failed to send Show", e);
 					}
@@ -516,6 +605,10 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 					autoIncCorrId++);
 			proxy.speak("Calling closest dealer named " + dealerName,
 					autoIncCorrId++);
+			/* Idea: Could look up open times and, if not open, could do something else such as speak to user or call next closest dealer??
+			SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+			df.parse("18:00");*/
+			
 		} catch (Exception ex) {
 		}
 		return phoneNumber;
@@ -638,7 +731,68 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	@Override
 	public void onCreateInteractionChoiceSetResponse(
 			CreateInteractionChoiceSetResponse response) {
-		// TODO Auto-generated method stub
+		boolean bSuccess = response.getSuccess();
+
+	    if (!bSuccess)
+	    {
+	        //handle error
+	    }
+
+	    //associate correlation ID with request
+	    Result theResult = response.getResultCode();
+
+	    if (theResult != Result.SUCCESS)
+	    {
+	        //handle error
+	    }
+	    samplePerformInteraction();
+	}
+	
+	private Vector<TTSChunk> getTTSChunksFromString(String str){
+		Vector<TTSChunk> chunks = new Vector<TTSChunk>(1);
+	    chunks.add(TTSChunkFactory.createChunk(SpeechCapabilities.TEXT, str));
+	    return chunks;
+	}
+	
+	public void samplePerformInteraction()
+	{
+	    /******Prerequisite CreateInteractionChoiceSet Occurs Prior to PerformInteraction*******/
+	    //Build Request and send to proxy object:
+	    int corrId = 1000;
+	    PerformInteraction msg = new PerformInteraction();
+	    msg.setInteractionMode(InteractionMode.VR_ONLY);
+	    msg.setCorrelationID(corrId);
+	    msg.setInitialText("My initial text");
+	    msg.setInitialPrompt(getTTSChunksFromString("Welcome welcome welcome"));
+	    msg.setInteractionMode(InteractionMode.BOTH);
+
+	    Vector<Integer> choiceSetIDs = new Vector<Integer>();
+	    choiceSetIDs.add(101); // match the ID used in CreateInteractionChoiceSet
+	    msg.setInteractionChoiceSetIDList(choiceSetIDs);
+
+	    msg.setHelpPrompt(getTTSChunksFromString("Help Prompt"));
+	    msg.setTimeoutPrompt(getTTSChunksFromString("Timeout Prompt"));
+	    msg.setTimeout(10000); //max 10000 milliseconds
+
+	    Vector<VrHelpItem> vrHelpItems = new Vector<VrHelpItem>();
+	    VrHelpItem item = new VrHelpItem();
+	    item.setText("Help Prompt");
+	    item.setPosition(1);
+
+	    /*Image image = new Image();
+	    image.setValue("0x89");
+	    image.setImageType(ImageType.STATIC);
+	    item.setImage(image);*/ 
+
+	    vrHelpItems.add(item);
+	    msg.setVrHelp(vrHelpItems);
+
+	    try{
+	        proxy.sendRPCRequest(msg);
+	    }
+	    catch (SyncException e) {
+	        e.printStackTrace();
+	    }
 	}
 	
 	@Override
@@ -664,7 +818,24 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	
 	@Override
 	public void onPerformInteractionResponse(PerformInteractionResponse response) {
-		// TODO Auto-generated method stub
+		if(response.getCorrelationID() ==  1000) {
+	        switch(response.getChoiceID())
+	        {
+	            case 99:
+				try {
+					proxy.speak("You selected 99", autoIncCorrId++);
+				} catch (SyncException e) { 
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	                break;
+	            case 100:
+	                
+	                break;
+	            default:
+	                return;
+	        }
+	    }
 	}
 	
 	@Override

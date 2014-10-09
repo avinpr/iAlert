@@ -20,10 +20,14 @@ public class MainActivity extends AppLinkActivity {
 		
 		@Override
 		public void onClick(View v) {
-			Toast.makeText(getBaseContext(),R.string.dialog_text, Toast.LENGTH_LONG).show();
-			startSyncProxy();
+			startProxy();
 		}
 	};
+	
+	private void startProxy(){
+		Toast.makeText(getBaseContext(),R.string.dialog_text, Toast.LENGTH_LONG).show();
+		startSyncProxy();
+	}
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,7 @@ public class MainActivity extends AppLinkActivity {
         setContentView(R.layout.activity_main);
         mConnectButton = (Button)findViewById(R.id.btnConnect);
         mConnectButton.setOnClickListener(mConnectButtonListener);
+        startProxy();
     }
 
     @Override

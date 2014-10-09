@@ -12,7 +12,7 @@
     <string name="reset">Reset SYNC</string>
     <string name="main_string">iAlert</string>
     <string name="app_icon_description">App Icon</string>
-    <string name="main_screen_text">Please click the button above to connect.\nYour phone will display a lock screen when connected to the HMI unit of your vehicle.</string>
+    <string name="main_screen_text">Please click the button above to connect.\nThen, please hit OK when iAlert \nshows up on the HMI screen.\nYour phone will then display a lock screen when connected to the HMI unit of your vehicle.</string>
     <string name="main_screen_button">Connect to car</string>
     <string name="dialog_title">Connecting</string>
     <string name="dialog_text">Attempting to connect. Please check HMI for connected app.</string>
