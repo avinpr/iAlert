@@ -1,8 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/reset"
-          android:title="@string/menu_reset" />
+          android:title="@string/menu_connect" />
     <item android:id="@+id/about"
         android:title="@string/menu_about" />
     <item android:id="@+id/tdk"
         android:title="@string/menu_run_in_tdk" />
+    <item android:id="@+id/history"
+        android:title="@string/menu_history" />
 </menu>

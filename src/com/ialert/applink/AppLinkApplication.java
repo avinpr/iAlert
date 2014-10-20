@@ -107,11 +107,11 @@ public class AppLinkApplication extends Application {
 	}
 	
 	public void showAppVersion(Context context) {
-		String appMessage = "HelloApplink Version Info not available";
+		String appMessage = "iAlert Version Info not available";
 		String proxyMessage = "Proxy Version Info not available";    		    		    		
 		AppLinkService serviceInstance = AppLinkService.getInstance();
 		try {
-			appMessage = "HelloApplink Version: " + 
+			appMessage = "iAlert Version: " + 
 						  getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
 		} catch (NameNotFoundException e) {
 			Log.d(AppLinkApplication.TAG, "Can't get package info", e);

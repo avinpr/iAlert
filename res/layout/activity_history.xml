@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    android:background="@color/black">
+    <TextView 
+        android:layout_height="30sp"
+        android:layout_width="match_parent"
+        android:background="@drawable/button"
+        android:text="Alert History"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textStyle="bold"/>
+    <ListView
+        android:id="@+id/history_list"
+		android:layout_height="fill_parent"
+		android:layout_width="match_parent"
+		android:scrollingCache="true"
+		android:smoothScrollbar="true"
+		android:clickable="false"
+		android:cacheColorHint="#00000000"/>
+</LinearLayout>
