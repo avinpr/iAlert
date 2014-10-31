@@ -158,6 +158,7 @@ public class DashboardActivity extends AppLinkActivity {
 		mBatteryStatusLayout = (LinearLayout) findViewById(R.id.battery_status_layout);
 		mBatteryStatusLayout.setOnClickListener(mTirePressureOnClickListener);
 
+		startSyncProxy();
 		readAndSetFromSharedPrefs();
 	}
 
@@ -204,9 +205,12 @@ public class DashboardActivity extends AppLinkActivity {
 			AppLinkApplication.getInstance().showAppVersion(this);
 			return true;
 		case R.id.tdk:
-			Toast.makeText(this, R.string.menu_tdk_toast_message,
+			boolean runInTdk = AppLinkApplication.getInstance().getRunInTdk();
+			AppLinkApplication.getInstance().setRunInTdk(!runInTdk);
+			startSyncProxy();
+			String message = getString(R.string.menu_tdk_toast_message) + runInTdk;
+			Toast.makeText(this, message,
 					Toast.LENGTH_LONG).show();
-			AppLinkApplication.getInstance().setRunInTdk(true);
 			return true;
 		case R.id.history:
 			startHistoryActivity();

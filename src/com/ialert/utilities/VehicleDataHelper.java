@@ -49,8 +49,7 @@ public class VehicleDataHelper {
 			ComponentVolumeStatus status = iter.next();
 			if (status.compareTo(ComponentVolumeStatus.ALERT) == 0
 					|| status.compareTo(ComponentVolumeStatus.LOW) == 0
-					|| status.compareTo(ComponentVolumeStatus.FAULT) == 0
-					|| status.compareTo(ComponentVolumeStatus.UNKNOWN) == 0) {
+					|| status.compareTo(ComponentVolumeStatus.FAULT) == 0) {
 				lowPressureIndicator = true;
 			}
 		}

@@ -71,6 +71,7 @@ import com.ford.syncV4.proxy.rpc.TTSChunk;
 import com.ford.syncV4.proxy.rpc.TireStatus;
 import com.ford.syncV4.proxy.rpc.UnsubscribeButtonResponse;
 import com.ford.syncV4.proxy.rpc.UnsubscribeVehicleDataResponse;
+import com.ford.syncV4.proxy.rpc.VehicleDataResult;
 import com.ford.syncV4.proxy.rpc.VrHelpItem;
 import com.ford.syncV4.proxy.rpc.enums.ButtonEventMode;
 import com.ford.syncV4.proxy.rpc.enums.ButtonName;
@@ -378,6 +379,12 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		mMediaPlayer.setOnCompletionListener(new OnCompletionListener() {
 			@Override
 			public void onCompletion(MediaPlayer mp) {
+				try {
+					proxy.speak(getStr(R.string.welcome_message),
+							autoIncCorrId++);
+				} catch (SyncException e) {
+					e.printStackTrace();
+				}
 			}
 
 		});
@@ -406,10 +413,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		 * notification.getAudioStreamingState(); switch(state) { case AUDIBLE:
 		 * // play audio if applicable break; case NOT_AUDIBLE: //
 		 * pause/stop/mute audio if applicable break; default: return; }
-		 * 
-		 * LockScreenManager.setHMILevelState(notification.getHmiLevel());
-		 * LockScreenManager.updateLockScreen();
 		 */
+		LockScreenManager.setHMILevelState(notification.getHmiLevel());
+		// LockScreenManager.updateLockScreen();
 
 		switch (notification.getHmiLevel()) {
 		case HMI_FULL:
@@ -426,6 +432,10 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 							false, true, false, true, true, false, false,
 							false, false, false, false, false, false, false,
 							false, true, false, false, false, autoIncCorrId++);
+					proxy.subscribevehicledata(true, false, false, true, true,
+							true, false, false, true, true, true, false, false,
+							false, false, false, false, false, false, false,
+							true, false, false, false, autoIncCorrId++);
 				} catch (SyncException e) {
 					DebugTool.logError("Failed to send Show", e);
 				}
@@ -467,14 +477,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	public void onOnDriverDistraction(OnDriverDistraction notification) {
 		LockScreenManager.setDriverDistractionState(notification.getState());
 		LockScreenManager.updateLockScreen();
-		try {
-			proxy.subscribevehicledata(true, false, false, true, true, true,
-					false, false, true, true, true, false, false, false, false,
-					false, false, false, false, false, true, false, false,
-					false, autoIncCorrId++);
-		} catch (SyncException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -486,7 +488,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				case YES:
 					break;
 				case NO:
-					
+
 					break;
 				default:
 				}
@@ -516,6 +518,25 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		DashboardActivity dashboardActivity = (DashboardActivity) AppLinkApplication
 				.getCurrentActivity();
 		dashboardActivity.DisplayVehicleData(data);
+	}
+
+	@Override
+	public void onSubscribeVehicleDataResponse(
+			SubscribeVehicleDataResponse response) {
+		VehicleDataResult gpsData = response.getGps();
+		// gpsData.
+		/*
+		 * TireStatus tireStatus = response.getTirePressure(); Double fuelLevel
+		 * = response.getFuelLevel(); ComponentVolumeStatus fuelStatus =
+		 * response.getFuelLevel_State(); AirbagStatus airbagStatus =
+		 * response.getAirbagStatus(); Integer odometer =
+		 * response.getOdometer();
+		 * 
+		 * VehicleReportData data = new VehicleReportData();
+		 * data.setGpsData(gpsData); data.setTireStatus(tireStatus);
+		 * data.setFuelLevel(fuelLevel); data.setFuelStatus(fuelStatus);
+		 * data.setAirbagStatus(airbagStatus); data.setOdometer(odometer);
+		 */
 	}
 
 	public void setUpSoftbuttons() {
@@ -658,23 +679,15 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 
 	@Override
 	public void onPerformInteractionResponse(PerformInteractionResponse response) {
-		/*if (response.getCorrelationID() == 1000) {
-			switch (response.getChoiceID()) {
-			case 99:
-				try {
-					proxy.speak("You selected 99", autoIncCorrId++);
-				} catch (SyncException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				break;
-			case 100:
-
-				break;
-			default:
-				return;
-			}
-		}*/
+		/*
+		 * if (response.getCorrelationID() == 1000) { switch
+		 * (response.getChoiceID()) { case 99: try {
+		 * proxy.speak("You selected 99", autoIncCorrId++); } catch
+		 * (SyncException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); } break; case 100:
+		 * 
+		 * break; default: return; } }
+		 */
 	}
 
 	@Override
@@ -730,12 +743,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
-	}
-
-	@Override
-	public void onSubscribeVehicleDataResponse(
-			SubscribeVehicleDataResponse response) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
