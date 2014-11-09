@@ -45,52 +45,84 @@ public final class R {
         public static final int battery=0x7f020002;
         public static final int bottom_of_car=0x7f020003;
         public static final int button=0x7f020004;
-        public static final int fuel_level=0x7f020005;
-        public static final int ic_action_search=0x7f020006;
-        public static final int ic_launcher=0x7f020007;
-        public static final int ic_launcher_1=0x7f020008;
-        public static final int odometer=0x7f020009;
-        public static final int sync=0x7f02000a;
-        public static final int sync_arrows=0x7f02000b;
-        public static final int tpms_warning=0x7f02000c;
+        public static final int find_vin_graphic=0x7f020005;
+        public static final int fuel=0x7f020006;
+        public static final int fuel_1=0x7f020007;
+        public static final int fuel_level=0x7f020008;
+        public static final int ic_action_search=0x7f020009;
+        public static final int ic_launcher=0x7f02000a;
+        public static final int ic_launcher_1=0x7f02000b;
+        public static final int odometer=0x7f02000c;
+        public static final int service=0x7f02000d;
+        public static final int sync=0x7f02000e;
+        public static final int sync_arrows=0x7f02000f;
+        public static final int tpms_warning=0x7f020010;
+        public static final int vin_locations=0x7f020011;
     }
     public static final class id {
-        public static final int about=0x7f0b0014;
-        public static final int airbag_status=0x7f0b0008;
-        public static final int battery_status=0x7f0b000b;
-        public static final int battery_status_layout=0x7f0b000a;
-        public static final int btnConnect=0x7f0b000f;
+        public static final int about=0x7f0b0029;
+        public static final int airbag_status=0x7f0b0009;
+        public static final int airbag_status_layout=0x7f0b0008;
+        public static final int battery_status=0x7f0b000c;
+        public static final int battery_status_layout=0x7f0b000b;
+        public static final int btnConnect=0x7f0b0011;
         public static final int fuel_status=0x7f0b0007;
         public static final int fuel_status_layout=0x7f0b0006;
-        public static final int history=0x7f0b0016;
-        public static final int history_list=0x7f0b000c;
-        public static final int imageView1=0x7f0b000d;
-        public static final int imageView2=0x7f0b0012;
+        public static final int gasStationAddress=0x7f0b0017;
+        public static final int gasStationDistance=0x7f0b0018;
+        public static final int gasStationList=0x7f0b000d;
+        public static final int gasStationName=0x7f0b0016;
+        public static final int gasStationPrice=0x7f0b0019;
+        public static final int history=0x7f0b002b;
+        public static final int history_list=0x7f0b000e;
+        public static final int imageView1=0x7f0b000f;
+        public static final int imageView2=0x7f0b001a;
         public static final int left_front=0x7f0b0005;
         public static final int left_rear=0x7f0b0003;
-        public static final int main_textView1=0x7f0b000e;
-        public static final int odometer_status=0x7f0b0009;
-        public static final int rLayout_Spalsh=0x7f0b0011;
+        public static final int mainView=0x7f0b0013;
+        public static final int main_textView1=0x7f0b0010;
+        public static final int odometer_status=0x7f0b000a;
+        public static final int popServiceCenterAddress=0x7f0b0024;
+        public static final int popServiceCenterCall=0x7f0b0026;
+        public static final int popServiceCenterClose=0x7f0b001f;
+        public static final int popServiceCenterFax=0x7f0b0022;
+        public static final int popServiceCenterName=0x7f0b0020;
+        public static final int popServiceCenterNavigate=0x7f0b0025;
+        public static final int popServiceCenterPhone=0x7f0b0021;
+        public static final int popServiceCenterViewWebsite=0x7f0b0027;
+        public static final int popServiceCenterWebsite=0x7f0b0023;
+        public static final int rLayout_Spalsh=0x7f0b0015;
         public static final int report_last_received=0x7f0b0000;
-        public static final int reset=0x7f0b0013;
+        public static final int reset=0x7f0b0028;
         public static final int right_front=0x7f0b0004;
         public static final int right_rear=0x7f0b0002;
-        public static final int tdk=0x7f0b0015;
-        public static final int textView1=0x7f0b0010;
+        public static final int serviceStationAddress=0x7f0b001c;
+        public static final int serviceStationDistance=0x7f0b001d;
+        public static final int serviceStationList=0x7f0b0014;
+        public static final int serviceStationName=0x7f0b001b;
+        public static final int serviceStationPhone=0x7f0b001e;
+        public static final int tdk=0x7f0b002a;
+        public static final int textView1=0x7f0b0012;
         public static final int tire_pressure_layout=0x7f0b0001;
     }
     public static final class layout {
         public static final int activity_dashboard=0x7f030000;
-        public static final int activity_history=0x7f030001;
-        public static final int activity_main=0x7f030002;
-        public static final int activity_splash=0x7f030003;
-        public static final int lockscreen=0x7f030004;
+        public static final int activity_gas_stations=0x7f030001;
+        public static final int activity_history=0x7f030002;
+        public static final int activity_main=0x7f030003;
+        public static final int activity_service_stations=0x7f030004;
+        public static final int activity_splash=0x7f030005;
+        public static final int gas_station=0x7f030006;
+        public static final int lockscreen=0x7f030007;
+        public static final int service_station=0x7f030008;
+        public static final int service_station_popup=0x7f030009;
     }
     public static final class menu {
         public static final int activity_main=0x7f0a0000;
     }
     public static final class raw {
-        public static final int jingle=0x7f050000;
+        public static final int alarm=0x7f050000;
+        public static final int jingle=0x7f050001;
     }
     public static final class string {
         public static final int about=0x7f080006;
@@ -104,6 +136,9 @@ public final class R {
         /**  Config entries 
          */
         public static final int ford_app_id=0x7f080000;
+        /**  string name="ford_app_id">210228482</string
+ Given to Ravi 
+         */
         public static final int ford_dealer_url_template=0x7f080001;
         public static final int low_tire_finding_dealer=0x7f080013;
         public static final int low_tire_speak_message_1=0x7f080012;
@@ -112,6 +147,7 @@ public final class R {
         public static final int main_string=0x7f080009;
         /**  http://www.mygasfeed.com/keys/api 
  http://devapi.mygasfeed.com//stations/radius/(Latitude)/(Longitude)/(distance)/(fuel type)/(sort by)/apikey.json?callback=? 
+ string name="maps_url_template">http://maps.google.com/maps?saddr=LATITUDE1,LONGITUDE1&amp;daddr=LATITUDE2,LONGITUDE2</string
          */
         public static final int maps_url_template=0x7f080003;
         /**  Menu options  

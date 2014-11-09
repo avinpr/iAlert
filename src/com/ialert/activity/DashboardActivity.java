@@ -4,10 +4,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +23,7 @@ import com.ford.syncV4.proxy.rpc.GPSData;
 import com.ialert.R;
 import com.ialert.applink.AppLinkActivity;
 import com.ialert.applink.AppLinkApplication;
+import com.ialert.applink.AppLinkService;
 import com.ialert.utilities.GasStationHelper;
 import com.ialert.utilities.LocationHelper;
 import com.ialert.utilities.ServiceCenterHelper;
@@ -37,23 +41,25 @@ public class DashboardActivity extends AppLinkActivity {
 	protected TextView mLeftFront;
 	protected TextView mFuelStatus;
 	protected TextView mAirbagStatus;
+	protected TextView mVinNumber;
 	protected TextView mOdometerStatus;
 	protected TextView mBatteryStatus;
 
 	protected LinearLayout mTirePressureLayout;
 	protected LinearLayout mFuelStatusLayout;
 	protected LinearLayout mBatteryStatusLayout;
+	protected LinearLayout mAirbagStatusLayout; 
 
 	private VehicleReportData mVehicleReportData;
 
-	private void showLocationNotEnabledMessage(){
+	private void showLocationNotEnabledMessage() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(
 				DashboardActivity.this);
 		builder.setMessage(
 				"Please check your network and GPS settings and try again later")
 				.setPositiveButton("OK", null).show();
 	}
-	
+
 	DialogInterface.OnClickListener tirePressureDialogClickListener = new DialogInterface.OnClickListener() {
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
@@ -87,7 +93,7 @@ public class DashboardActivity extends AppLinkActivity {
 		public void onClick(View v) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					DashboardActivity.this);
-			builder.setMessage("Would you like to call the closest dealer?")
+			builder.setMessage("Would you like to find the closest Ford dealer?")
 					.setPositiveButton("Yes", tirePressureDialogClickListener)
 					.setNegativeButton("No", tirePressureDialogClickListener)
 					.show();
@@ -129,7 +135,7 @@ public class DashboardActivity extends AppLinkActivity {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					DashboardActivity.this);
 			builder.setMessage(
-					"Would you like to navigate to the closest gas station?")
+					"Would you like to find the closest gas station?")
 					.setPositiveButton("Yes", fuelStatusDialogClickListener)
 					.setNegativeButton("No", fuelStatusDialogClickListener)
 					.show();
@@ -148,6 +154,8 @@ public class DashboardActivity extends AppLinkActivity {
 		mLeftFront = (TextView) findViewById(R.id.left_front);
 		mFuelStatus = (TextView) findViewById(R.id.fuel_status);
 		mAirbagStatus = (TextView) findViewById(R.id.airbag_status);
+		// mVinNumber = (TextView) findViewById(R.id.vin_number);
+
 		mOdometerStatus = (TextView) findViewById(R.id.odometer_status);
 		mBatteryStatus = (TextView) findViewById(R.id.battery_status);
 
@@ -157,9 +165,60 @@ public class DashboardActivity extends AppLinkActivity {
 		mFuelStatusLayout.setOnClickListener(mFuelStatusOnClickListener);
 		mBatteryStatusLayout = (LinearLayout) findViewById(R.id.battery_status_layout);
 		mBatteryStatusLayout.setOnClickListener(mTirePressureOnClickListener);
+		mAirbagStatusLayout = (LinearLayout) findViewById(R.id.airbag_status_layout);
 
-		startSyncProxy();
+		if (bluetoothAvailable()) {
+			startSyncProxy();
+		} else {
+			promptBluetoothWarning();
+		}
 		readAndSetFromSharedPrefs();
+	}
+
+	private void promptBluetoothWarning() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Bluetooth not enabled");
+		builder.setMessage(
+				"iAlert requires the use of bluetooth. Would you like to enable bluetooth now?")
+				.setPositiveButton("Yes", dialogClickListener)
+				.setNegativeButton("No", dialogClickListener).show();
+	}
+
+	private DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			switch (which) {
+			case DialogInterface.BUTTON_POSITIVE:
+				final Intent intent = new Intent(Intent.ACTION_MAIN, null);
+				intent.addCategory(Intent.CATEGORY_LAUNCHER);
+				ComponentName cn = new ComponentName("com.android.settings",
+						"com.android.settings.bluetooth.BluetoothSettings");
+				intent.setComponent(cn);
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
+				break;
+			}
+		}
+	};
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		/*if (AppLinkService.getInstance() != null
+				&& AppLinkService.getInstance().getProxy() == null
+				&& bluetoothAvailable()) {
+			startSyncProxy();
+		}*/ 
+	}
+
+	private boolean bluetoothAvailable() {
+		boolean btAvailable = false;
+		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+		if (btAdapter != null && btAdapter.isEnabled()
+				&& !btAdapter.isDiscovering()) {
+			btAvailable = true;
+		}
+		return btAvailable;
 	}
 
 	private void readAndSetFromSharedPrefs() {
@@ -178,8 +237,14 @@ public class DashboardActivity extends AppLinkActivity {
 					DEFAULT_STRING));
 			mFuelStatus.setText(sharedPrefs.getString(Constants.FUEL,
 					DEFAULT_STRING));
+
 			mAirbagStatus.setText(sharedPrefs.getString(Constants.AIRBAG,
 					DEFAULT_STRING));
+
+			/*
+			 * mVinNumber.setText(sharedPrefs.getString(Constants.VIN,
+			 * DEFAULT_STRING));
+			 */
 			mOdometerStatus.setText(sharedPrefs.getString(Constants.ODOMETER,
 					DEFAULT_STRING));
 			mBatteryStatus.setText(sharedPrefs.getString(Constants.BATTERY,
@@ -207,10 +272,9 @@ public class DashboardActivity extends AppLinkActivity {
 		case R.id.tdk:
 			boolean runInTdk = AppLinkApplication.getInstance().getRunInTdk();
 			AppLinkApplication.getInstance().setRunInTdk(!runInTdk);
-			startSyncProxy();
-			String message = getString(R.string.menu_tdk_toast_message) + runInTdk;
-			Toast.makeText(this, message,
-					Toast.LENGTH_LONG).show();
+			String message = getString(R.string.menu_tdk_toast_message)
+					+ !runInTdk;
+			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 			return true;
 		case R.id.history:
 			startHistoryActivity();
@@ -242,9 +306,6 @@ public class DashboardActivity extends AppLinkActivity {
 		mVehicleReportData = data;
 		final String lastReported = "Report last received on:"
 				+ getCurrentDateAndTime();
-		final String airbagStatus = VehicleDataHelper.GetAirbagStatus(data
-				.getAirbagStatus());
-		final String odometer = data.getOdometer().toString();
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -252,17 +313,31 @@ public class DashboardActivity extends AppLinkActivity {
 					@Override
 					public void run() {
 						mReportLastReceived.setText(lastReported);
-						mRightRear.setText(data.getTireStatus().getRightRear()
-								.getStatus().name());
-						mLeftRear.setText(data.getTireStatus().getLeftRear()
-								.getStatus().name());
-						mRightFront.setText(data.getTireStatus()
-								.getRightFront().getStatus().name());
-						mLeftFront.setText(data.getTireStatus().getLeftFront()
-								.getStatus().name());
-						mFuelStatus.setText(data.getFuelStatus().name());
+						mRightRear.setText(VehicleDataHelper
+								.GetRightRearTirePressureStatus(data));
+						mLeftRear.setText(VehicleDataHelper
+								.GetLeftRearTirePressureStatus(data));
+						mRightFront.setText(VehicleDataHelper
+								.GetRightFrontTirePressureStatus(data));
+						mLeftFront.setText(VehicleDataHelper
+								.GetLeftFrontTirePressureStatus(data));
+						String fuelStatus = VehicleDataHelper
+								.GetFuelStatus(data);
+						mFuelStatus.setText(fuelStatus);
+						if (fuelStatus == VehicleDataHelper.LOW_STATUS) {
+							mFuelStatus.setTextColor(Color.RED);
+						}
+
+						String airbagStatus = VehicleDataHelper
+								.GetAirbagStatus(data);
 						mAirbagStatus.setText(airbagStatus);
-						mOdometerStatus.setText(odometer);
+						if (airbagStatus == VehicleDataHelper.ALERT_STATUS) {
+							mAirbagStatus.setTextColor(Color.RED);
+						}
+
+						// mVinNumber.setText(VehicleDataHelper.GetVin(data));
+						mOdometerStatus.setText(VehicleDataHelper
+								.GetOdometerReading(data));
 						saveToSharedPrefs();
 					}
 				});
@@ -284,6 +359,7 @@ public class DashboardActivity extends AppLinkActivity {
 				.toString());
 		editor.putString(Constants.FUEL, mFuelStatus.getText().toString());
 		editor.putString(Constants.AIRBAG, mAirbagStatus.getText().toString());
+		// editor.putString(Constants.VIN, mVinNumber.getText().toString());
 		editor.putString(Constants.ODOMETER, mOdometerStatus.getText()
 				.toString());
 		editor.putString(Constants.BATTERY, mBatteryStatus.getText().toString());

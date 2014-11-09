@@ -44,6 +44,16 @@
             android:label="Alert History"
             android:screenOrientation="portrait" >
         </activity>
+        <activity
+            android:name="com.ialert.activity.GasStationActivity"
+            android:label="Gas Stations"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.ialert.activity.ServiceStationActivity"
+            android:label="Gas Stations"
+            android:screenOrientation="portrait" >
+        </activity>
 
         <service android:name="com.ialert.applink.AppLinkService" >
         </service>

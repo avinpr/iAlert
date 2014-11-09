@@ -10,10 +10,16 @@ import com.ialert.activity.VehicleReportData;
 
 public class VehicleDataHelper {
 
-	private static final String ALERT_STATUS = "AT FAULT";
-	private static final String NORMAL_STATUS = "NORMAL";
+	public static final String ALERT_STATUS = "AT FAULT";
+	public static final String LOW_STATUS = "LOW";
+	public static final String NORMAL_STATUS = "NORMAL";
+	public static final String UNKNOWN = "UNKNOWN";
+	public static final Double ACCEPTABLE_FUEL_LEVEL = 10.0;
 
-	public static String GetAirbagStatus(AirbagStatus status) {
+	public static String GetAirbagStatus(VehicleReportData data) {
+		if (data == null || data.getAirbagStatus() == null)
+			return UNKNOWN;
+		AirbagStatus status = data.getAirbagStatus();
 		if (status.getDriverAirbagDeployed().compareTo(
 				VehicleDataEventStatus.FAULT) == 0
 				|| status.getDriverCurtainAirbagDeployed().compareTo(
@@ -37,12 +43,14 @@ public class VehicleDataHelper {
 	}
 
 	public static Boolean IsTirePressureLow(VehicleReportData data) {
+		if (data == null || data.getTireStatus() == null)
+			return false;
 		Vector<ComponentVolumeStatus> tireStatuses = new Vector<ComponentVolumeStatus>();
 		tireStatuses.add(data.getTireStatus().getLeftRear().getStatus());
 		tireStatuses.add(data.getTireStatus().getRightRear().getStatus());
 		tireStatuses.add(data.getTireStatus().getRightRear().getStatus());
 		tireStatuses.add(data.getTireStatus().getLeftRear().getStatus());
-		
+
 		boolean lowPressureIndicator = false;
 		Iterator<ComponentVolumeStatus> iter = tireStatuses.iterator();
 		while (iter.hasNext()) {
@@ -54,5 +62,75 @@ public class VehicleDataHelper {
 			}
 		}
 		return lowPressureIndicator;
+	}
+
+	@SuppressWarnings("null")
+	public static String GetFuelStatus(VehicleReportData data) {
+		/*try {
+			if (data == null && data.getFuelStatus() == null)
+				return UNKNOWN;
+			return data.getFuelStatus().name();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return UNKNOWN;
+		}*/
+		if (data == null || data.getFuelLevel() == null) {
+			return UNKNOWN;
+		} else {
+			Double fuelLevel = data.getFuelLevel();
+			if (fuelLevel <= ACCEPTABLE_FUEL_LEVEL)
+				return LOW_STATUS;
+			else
+				return NORMAL_STATUS;
+		}
+	}
+
+	private static boolean HasLowFuel(VehicleReportData data) {
+		if (data == null || data.getFuelLevel() == null) {
+			return false;
+		} else {
+			Double fuelLevel = data.getFuelLevel();
+			if (fuelLevel <= ACCEPTABLE_FUEL_LEVEL)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	public static String GetOdometerReading(VehicleReportData data) {
+		if (data == null || data.getOdometer() == null)
+			return UNKNOWN;
+		return data.getOdometer().toString();
+	}
+
+	public static String GetRightRearTirePressureStatus(VehicleReportData data) {
+		if (data == null || data.getTireStatus() == null)
+			return UNKNOWN;
+		return data.getTireStatus().getRightRear().getStatus().name();
+	}
+
+	public static String GetRightFrontTirePressureStatus(VehicleReportData data) {
+		if (data == null || data.getTireStatus() == null)
+			return UNKNOWN;
+		return data.getTireStatus().getRightFront().getStatus().name();
+	}
+
+	public static String GetLeftRearTirePressureStatus(VehicleReportData data) {
+		if (data == null || data.getTireStatus() == null)
+			return UNKNOWN;
+		return data.getTireStatus().getLeftRear().getStatus().name();
+	}
+
+	public static String GetLeftFrontTirePressureStatus(VehicleReportData data) {
+		if (data == null || data.getTireStatus() == null)
+			return UNKNOWN;
+		return data.getTireStatus().getLeftFront().getStatus().name();
+	}
+
+	public static String GetVin(VehicleReportData data) {
+		if (data == null || data.getVin() == null || data.getVin().equals("")) {
+			return UNKNOWN;
+		}
+		return data.getVin();
 	}
 }

@@ -184,6 +184,7 @@
         	    android:textColor="@color/white"/>
         </LinearLayout>
     	<LinearLayout 
+    	    android:id="@+id/airbag_status_layout" 
     	    android:orientation="vertical"
         	android:layout_width="0dp"
         	android:layout_height="match_parent"
@@ -200,7 +201,7 @@
         	    android:layout_weight="0.25"
         	    android:layout_width="match_parent"
         	    android:gravity="center_horizontal"
-        	    android:text="Airbag"
+        	    android:text="Airbag status"
         	    android:textStyle="bold"
         	    android:textSize="20sp"
         	    android:textColor="@color/white"/>

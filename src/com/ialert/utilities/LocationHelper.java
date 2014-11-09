@@ -2,11 +2,11 @@ package com.ialert.utilities;
 
 import java.util.List;
 
-import com.ford.syncV4.proxy.rpc.GPSData;
-
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+
+import com.ford.syncV4.proxy.rpc.GPSData;
 
 public class LocationHelper {
 

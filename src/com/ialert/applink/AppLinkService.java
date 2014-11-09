@@ -76,6 +76,7 @@ import com.ford.syncV4.proxy.rpc.VrHelpItem;
 import com.ford.syncV4.proxy.rpc.enums.ButtonEventMode;
 import com.ford.syncV4.proxy.rpc.enums.ButtonName;
 import com.ford.syncV4.proxy.rpc.enums.ComponentVolumeStatus;
+import com.ford.syncV4.proxy.rpc.enums.DriverDistractionState;
 import com.ford.syncV4.proxy.rpc.enums.InteractionMode;
 import com.ford.syncV4.proxy.rpc.enums.Result;
 import com.ford.syncV4.proxy.rpc.enums.SoftButtonType;
@@ -85,6 +86,7 @@ import com.ford.syncV4.proxy.rpc.enums.TextAlignment;
 import com.ford.syncV4.transport.TCPTransportConfig;
 import com.ford.syncV4.util.DebugTool;
 import com.ialert.R;
+import com.ialert.activity.Constants;
 import com.ialert.activity.DashboardActivity;
 import com.ialert.activity.VehicleReportData;
 
@@ -111,9 +113,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	// the ALE and enter it below.
 	// Ensure that this machine can ping the device. Find the IP address of the
 	// device from "Settings --> Wi-Fi --> <Selected Wi-Fi> --> IP address"
-	private final String IP_ADDRESS_LOCALHOST = "192.168.254.19"; // "10.255.6.47";
+	private final String IP_ADDRESS_LOCALHOST = "192.168.254.10"; // "10.255.6.47";
 	// //"127.0.0.1";
-	private final String IP_ADDRESS_EMULATOR = "10.0.2.2";
+	private final String IP_ADDRESS_EMULATOR = "192.168.254.10";
 
 	Vector<SoftButton> mainSoftButtons = new Vector<SoftButton>();
 	Vector<ComponentVolumeStatus> tireStatuses = new Vector<ComponentVolumeStatus>();
@@ -121,6 +123,10 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	// Service shutdown timing constants
 	private static final int CONNECTION_TIMEOUT = 60000;
 	private static final int STOP_SERVICE_DELAY = 5000;
+
+	private Boolean lowFuelAlerted = false;
+
+	private static final Double driverDistractionSpeed = 6.0; // mph
 
 	/**
 	 * Runnable that stops this service if there hasn't been a connection to
@@ -200,9 +206,10 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		mHandler.removeCallbacks(mStopServiceRunnable);
 
 		// Start the proxy when the service starts
-		if (intent != null) {
-			startProxy();
+		if (proxy != null) {
+			disposeSyncProxy();
 		}
+		startProxy();
 
 		// Queue the check connection runnable to stop the service if no
 		// connection is made
@@ -323,14 +330,16 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	public void sampleCreateChoiceSet() {
 		int corrId = autoIncCorrId++;
 
+		String message = "Find closest gas station?";
+
 		Vector<Choice> commands = new Vector<Choice>();
 		Choice one = new Choice();
 		one.setChoiceID(99);
-		one.setMenuName("Choice One");
+		one.setMenuName("Yes");
 		Vector<String> vrCommands = new Vector<String>();
-		vrCommands.add("Choice 1");
-		vrCommands.add("Choice 1 Alias 1");
-		vrCommands.add("Choice 1 Alias 2");
+		vrCommands.add("Yes");
+		vrCommands.add("Yeah");
+		vrCommands.add("Yep");
 		one.setVrCommands(vrCommands);
 
 		// Adding images is causing a failure when sending the rpc request.
@@ -345,11 +354,11 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 
 		Choice two = new Choice();
 		two.setChoiceID(100);
-		two.setMenuName("Choice Two");
+		two.setMenuName("No");
 		Vector<String> vrCommands2 = new Vector<String>();
-		vrCommands2.add("Choice 2");
-		vrCommands2.add("Choice 2 Alias 1");
-		vrCommands2.add("Choice 2 Alias 2");
+		vrCommands2.add("No");
+		vrCommands2.add("Nopes");
+		vrCommands2.add("Nah");
 		two.setVrCommands(vrCommands2);
 
 		/*
@@ -366,10 +375,29 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		msg.setChoiceSet(commands);
 
 		try {
+			proxy.speak(message, autoIncCorrId++);
 			proxy.sendRPCRequest(msg);
 		} catch (SyncException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void playAudio(int audioId, final String message) {
+		mMediaPlayer = MediaPlayer.create(AppLinkApplication
+				.getCurrentActivity().getBaseContext(), audioId);
+		mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		mMediaPlayer.setOnCompletionListener(new OnCompletionListener() {
+			@Override
+			public void onCompletion(MediaPlayer mp) {
+				try {
+					proxy.speak(message, autoIncCorrId++);
+				} catch (SyncException e) {
+					e.printStackTrace();
+				}
+			}
+
+		});
+		mMediaPlayer.start();
 	}
 
 	private void playAudio() {
@@ -428,14 +456,28 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 					proxy.show(getStr(R.string.welcome_screen_message_1),
 							getStr(R.string.welcome_screen_message_2),
 							TextAlignment.CENTERED, autoIncCorrId++);
-					proxy.getvehicledata(true, false, false, true, true, false,
-							false, true, false, true, true, false, false,
-							false, false, false, false, false, false, false,
-							false, true, false, false, false, autoIncCorrId++);
-					proxy.subscribevehicledata(true, false, false, true, true,
-							true, false, false, true, true, true, false, false,
-							false, false, false, false, false, false, false,
-							true, false, false, false, autoIncCorrId++);
+					proxy.getvehicledata(Constants.GPS_DATA,
+							Constants.SPEED_DATA, Constants.RPM_DATA,
+							Constants.FUEL_LEVEL_DATA,
+							Constants.FUEL_LEVEL_STATE_DATA,
+							Constants.INSTANT_FUEL_CONSUMPTION_DATA,
+							Constants.EXTERNAL_TEMP_DATA, Constants.VIN_DATA,
+							Constants.PRNDL_DATA, Constants.TIRE_PRESSURE_DATA,
+							Constants.ODOMETER_DATA,
+							Constants.BELT_STATUS_DATA,
+							Constants.BODY_INFORMATION_DATA,
+							Constants.DEVICE_STATUS_DATA,
+							Constants.DRIVER_BRAKING_DATA,
+							Constants.WIPER_STATUS_DATA,
+							Constants.HEADLAMP_STATUS_DATA,
+							Constants.ENGINE_TORQUE_DATA,
+							Constants.ACC_PEDAL_POSITION_DATA,
+							Constants.STEERING_WHEEL_ANGLE_DATA,
+							Constants.ECALL_INFO_DATA,
+							Constants.AIRBAG_STATUS_DATA,
+							Constants.EMERGENCY_EVENT_DATA,
+							Constants.CLUSTER_MODE_STATUS_DATA,
+							Constants.MY_KEY_DATA, autoIncCorrId++);
 				} catch (SyncException e) {
 					DebugTool.logError("Failed to send Show", e);
 				}
@@ -444,16 +486,8 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				subButtons();
 			} else {
 				try {
-					// proxy.show("SyncProxy is", "Alive",
-					// TextAlignment.CENTERED, autoIncCorrId++);
-					// playAudio();
-					/*
-					 * proxy.speak(getStr(R.string.welcome_message),
-					 * autoIncCorrId++);
-					 */
-					proxy.show(getStr(R.string.welcome_screen_message_1),
-							getStr(R.string.welcome_screen_message_2),
-							TextAlignment.CENTERED, autoIncCorrId++);
+					proxy.show("SyncProxy is", "Alive", TextAlignment.CENTERED,
+							autoIncCorrId++);
 				} catch (SyncException e) {
 					DebugTool.logError("Failed to send Show", e);
 				}
@@ -475,8 +509,74 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 
 	@Override
 	public void onOnDriverDistraction(OnDriverDistraction notification) {
-		LockScreenManager.setDriverDistractionState(notification.getState());
+		DriverDistractionState driverDistractionState = notification.getState();
+		LockScreenManager.setDriverDistractionState(driverDistractionState);
 		LockScreenManager.updateLockScreen();
+		try {
+			if (driverDistractionState == DriverDistractionState.DD_OFF
+					&& proxy != null) {
+				proxy.unsubscribevehicledata(Constants.GPS_DATA,
+						Constants.SPEED_DATA, Constants.RPM_DATA,
+						Constants.FUEL_LEVEL_DATA,
+						Constants.FUEL_LEVEL_STATE_DATA,
+						Constants.INSTANT_FUEL_CONSUMPTION_DATA,
+						Constants.EXTERNAL_TEMP_DATA, Constants.PRNDL_DATA,
+						Constants.TIRE_PRESSURE_DATA, Constants.ODOMETER_DATA,
+						Constants.BELT_STATUS_DATA,
+						Constants.BODY_INFORMATION_DATA,
+						Constants.DEVICE_STATUS_DATA,
+						Constants.DRIVER_BRAKING_DATA,
+						Constants.WIPER_STATUS_DATA,
+						Constants.WIPER_STATUS_DATA,
+						Constants.ENGINE_TORQUE_DATA,
+						Constants.ACC_PEDAL_POSITION_DATA,
+						Constants.STEERING_WHEEL_ANGLE_DATA,
+						Constants.ECALL_INFO_DATA,
+						Constants.AIRBAG_STATUS_DATA,
+						Constants.EMERGENCY_EVENT_DATA,
+						Constants.CLUSTER_MODE_STATUS_DATA,
+						Constants.MY_KEY_DATA, autoIncCorrId++);
+				/*
+				 * proxy.speak("You are now driving below" +
+				 * driverDistractionSpeed + "miles per hour.", autoIncCorrId++);
+				 */
+				proxy.show("iAlert", "Monitoring: OFF", TextAlignment.CENTERED,
+						autoIncCorrId++);
+			} else if (driverDistractionState == DriverDistractionState.DD_ON
+					&& proxy != null) {
+				proxy.subscribevehicledata(Constants.GPS_DATA,
+						Constants.SPEED_DATA, Constants.RPM_DATA,
+						Constants.FUEL_LEVEL_DATA,
+						Constants.FUEL_LEVEL_STATE_DATA,
+						Constants.INSTANT_FUEL_CONSUMPTION_DATA,
+						Constants.EXTERNAL_TEMP_DATA, Constants.PRNDL_DATA,
+						Constants.TIRE_PRESSURE_DATA, Constants.ODOMETER_DATA,
+						Constants.BELT_STATUS_DATA,
+						Constants.BODY_INFORMATION_DATA,
+						Constants.DEVICE_STATUS_DATA,
+						Constants.DRIVER_BRAKING_DATA,
+						Constants.WIPER_STATUS_DATA,
+						Constants.WIPER_STATUS_DATA,
+						Constants.ENGINE_TORQUE_DATA,
+						Constants.ACC_PEDAL_POSITION_DATA,
+						Constants.STEERING_WHEEL_ANGLE_DATA,
+						Constants.ECALL_INFO_DATA,
+						Constants.AIRBAG_STATUS_DATA,
+						Constants.EMERGENCY_EVENT_DATA,
+						Constants.CLUSTER_MODE_STATUS_DATA,
+						Constants.MY_KEY_DATA, autoIncCorrId++);
+				/*
+				 * proxy.speak( "You are now driving above" +
+				 * driverDistractionSpeed +
+				 * " miles per hour. iAlert will now continue moritoring your vehicle while you drive. Keep your hands on the wheel and your eyes on the road"
+				 * , autoIncCorrId++);
+				 */
+				proxy.show("iAlert", "Monitoring: ON", TextAlignment.CENTERED,
+						autoIncCorrId++);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	@Override
@@ -506,6 +606,8 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		ComponentVolumeStatus fuelStatus = response.getFuelLevel_State();
 		AirbagStatus airbagStatus = response.getAirbagStatus();
 		Integer odometer = response.getOdometer();
+		String vin = response.getVin();
+		Double speed = response.getSpeed();
 
 		VehicleReportData data = new VehicleReportData();
 		data.setGpsData(gpsData);
@@ -514,29 +616,66 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		data.setFuelStatus(fuelStatus);
 		data.setAirbagStatus(airbagStatus);
 		data.setOdometer(odometer);
+		data.setVin(vin);
 
-		DashboardActivity dashboardActivity = (DashboardActivity) AppLinkApplication
-				.getCurrentActivity();
-		dashboardActivity.DisplayVehicleData(data);
+		if (speed > driverDistractionSpeed) {
+			try {
+				LockScreenManager
+						.setDriverDistractionState(DriverDistractionState.DD_ON);
+				LockScreenManager.updateLockScreen();
+				proxy.speak(
+						"You are now driving above 5 miles per hour. iAlert will now continue moritoring your vehicle while you drive. Keep your hands on the wheel and your eyes on the road",
+						autoIncCorrId++);
+				proxy.show("iAlert", "Monitoring: ON", TextAlignment.CENTERED,
+						autoIncCorrId++);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		} else {
+			DashboardActivity dashboardActivity = (DashboardActivity) AppLinkApplication
+					.getCurrentActivity();
+			dashboardActivity.DisplayVehicleData(data);
+		}
 	}
 
 	@Override
 	public void onSubscribeVehicleDataResponse(
 			SubscribeVehicleDataResponse response) {
-		VehicleDataResult gpsData = response.getGps();
-		// gpsData.
-		/*
-		 * TireStatus tireStatus = response.getTirePressure(); Double fuelLevel
-		 * = response.getFuelLevel(); ComponentVolumeStatus fuelStatus =
-		 * response.getFuelLevel_State(); AirbagStatus airbagStatus =
-		 * response.getAirbagStatus(); Integer odometer =
-		 * response.getOdometer();
-		 * 
-		 * VehicleReportData data = new VehicleReportData();
-		 * data.setGpsData(gpsData); data.setTireStatus(tireStatus);
-		 * data.setFuelLevel(fuelLevel); data.setFuelStatus(fuelStatus);
-		 * data.setAirbagStatus(airbagStatus); data.setOdometer(odometer);
-		 */
+		boolean responseSuccessful = response.getSuccess();
+		String resp = response.getInfo();
+		String functionName = response.getFunctionName();
+		String messageType = response.getMessageType();
+		VehicleDataResult result = response.getGps();
+	}
+
+	@Override
+	public void onUnsubscribeVehicleDataResponse(
+			UnsubscribeVehicleDataResponse response) {
+		boolean responseSuccessful = response.getSuccess();
+		String resp = response.getInfo();
+		String functionName = response.getFunctionName();
+		String messageType = response.getMessageType();
+		VehicleDataResult result = response.getGps();
+	}
+
+	@Override
+	public void onOnVehicleData(OnVehicleData notification) {
+		GPSData gpsData = notification.getGps();
+		Double lat = gpsData.getLatitudeDegrees();
+		Double lon = gpsData.getLongitudeDegrees();
+		ComponentVolumeStatus fuelStatus = notification.getFuelLevel_State();
+		if (fuelStatus == ComponentVolumeStatus.LOW
+				|| fuelStatus == ComponentVolumeStatus.ALERT
+				|| fuelStatus == ComponentVolumeStatus.FAULT) {
+			if (!lowFuelAlerted) {
+				try {
+					playAudio(R.raw.alarm, "The fuel level in the car is low!");
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				lowFuelAlerted = true;
+			}
+		}
 	}
 
 	public void setUpSoftbuttons() {
@@ -746,13 +885,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	}
 
 	@Override
-	public void onUnsubscribeVehicleDataResponse(
-			UnsubscribeVehicleDataResponse response) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void onReadDIDResponse(ReadDIDResponse response) {
 		// TODO Auto-generated method stub
 
@@ -762,11 +894,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	public void onGetDTCsResponse(GetDTCsResponse response) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public void onOnVehicleData(OnVehicleData notification) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override

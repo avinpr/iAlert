@@ -12,7 +12,14 @@ public class VehicleReportData {
 	private ComponentVolumeStatus fuelStatus;
 	private AirbagStatus airbagStatus;
 	private Integer odometer;
+	private String vin;
 	
+	public String getVin() {
+		return vin;
+	}
+	public void setVin(String vin) {
+		this.vin = vin;
+	}
 	public GPSData getGpsData() {
 		return gpsData;
 	}

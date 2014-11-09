@@ -1,5 +1,7 @@
 package com.ialert.utilities;
 
+import java.util.ArrayList;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -14,41 +16,39 @@ import android.net.Uri;
 
 import com.ford.syncV4.proxy.rpc.GPSData;
 import com.ialert.R;
+import com.ialert.activity.GasStationActivity;
 
 public class GasStationHelper {
 
 	protected static Context mContext;
-	private static double mLatitude;
-	private static double mLongitude;
+	public static double mLatitude;
+	public static double mLongitude;
 
 	public static void NavigateToClosestGasStation(Context context,
 			GPSData gpsData) {
-		mContext = context;
-		mLatitude = gpsData.getLatitudeDegrees();
-		mLongitude = gpsData.getLongitudeDegrees();
-		Thread t = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				startNavigationIntent();
-			}
-		});
-		t.start();
+		GetGasStations(context, gpsData);
+		/*
+		 * mContext = context; mLatitude = gpsData.getLatitudeDegrees();
+		 * mLongitude = gpsData.getLongitudeDegrees(); Thread t = new Thread(new
+		 * Runnable() {
+		 * 
+		 * @Override public void run() { startNavigationIntent(); } });
+		 * t.start();
+		 */
 	}
 
 	private static void startNavigationIntent() {
 		String navigationUrl = getClosestGasStationAddress();
-		Intent navIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(navigationUrl));
+		Intent navIntent = new Intent(Intent.ACTION_VIEW,
+				Uri.parse(navigationUrl));
 		mContext.startActivity(navIntent);
 	}
 
-	private static String findClosestGasStationJson() {
+	private static String getGasStationsJson() {
 		HttpClient client = new DefaultHttpClient();
 		String requestUrl = mContext.getString(R.string.mygasfeed_url_template)
-				.replaceAll(
-						"LATITUDE",
-						String.valueOf(mLatitude)).replaceAll("LONGITUDE",
-								String.valueOf(mLongitude));
+				.replaceAll("LATITUDE", String.valueOf(mLatitude))
+				.replaceAll("LONGITUDE", String.valueOf(mLongitude));
 		HttpGet request = new HttpGet(requestUrl);
 		ResponseHandler<String> responseHandler = new BasicResponseHandler();
 		String response_str = null;
@@ -61,7 +61,7 @@ public class GasStationHelper {
 	}
 
 	private static String getClosestGasStationAddress() {
-		String gasStationResponse = findClosestGasStationJson();
+		String gasStationResponse = getGasStationsJson();
 		String gasStationAddress = null;
 		try {
 			JSONObject gasStationResp = new JSONObject(gasStationResponse);
@@ -70,16 +70,57 @@ public class GasStationHelper {
 			String gasStationLat = closestGasStation.getString("lat");
 			String gasStationLon = closestGasStation.getString("lng");
 			gasStationAddress = mContext.getString(R.string.maps_url_template)
-					.replaceAll(
-							"LATITUDE1",
-							String.valueOf(mLatitude))
-									.replaceAll("LONGITUDE1",
-											String.valueOf(mLongitude))
-									.replaceAll("LATITUDE2", gasStationLat)
-									.replaceAll("LONGITUDE2", gasStationLon);
+					.replaceAll("LATITUDE1", String.valueOf(mLatitude))
+					.replaceAll("LONGITUDE1", String.valueOf(mLongitude))
+					.replaceAll("LATITUDE2", gasStationLat)
+					.replaceAll("LONGITUDE2", gasStationLon);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 		return gasStationAddress;
+	}
+
+	private static void findClosestGasStations() {
+		ArrayList<GasStation> gasStationList = new ArrayList<GasStation>();
+		String gasStationResponse = getGasStationsJson();
+		try {
+			JSONObject gasStationResp = new JSONObject(gasStationResponse);
+			JSONArray gasStations = gasStationResp.getJSONArray("stations");
+			for (int i = 0; i < gasStations.length(); i++) {
+				JSONObject closestGasStation = gasStations.getJSONObject(i);
+				GasStation gasStation = new GasStation();
+				gasStation.setCountry(closestGasStation.getString("country"));
+				gasStation.setZip(closestGasStation.getString("zip"));
+				gasStation.setPrice(closestGasStation.getString("reg_price"));
+				gasStation.setAddress(closestGasStation.getString("address"));
+				gasStation.setLat(closestGasStation.getString("lat"));
+				gasStation.setLon(closestGasStation.getString("lng"));
+				gasStation.setStation(closestGasStation.getString("station"));
+				gasStation.setRegion(closestGasStation.getString("region"));
+				//gasStation.setCity(closestGasStation.getString("city"));
+				gasStation.setDistance(closestGasStation.getString("distance"));
+				gasStationList.add(gasStation);
+			}
+			Intent intent = new Intent(mContext, GasStationActivity.class);
+			intent.putExtra("gasStationList", gasStationList);
+			mContext.startActivity(intent);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	public static void GetGasStations(Context context, GPSData gpsData) {
+		mContext = context;
+		mLatitude = gpsData.getLatitudeDegrees();
+		mLongitude = gpsData.getLongitudeDegrees();
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				findClosestGasStations();
+			}
+		});
+		t.start();
+
 	}
 }

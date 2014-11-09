@@ -2,13 +2,14 @@
 <resources>
 	<!-- Config entries -->
 	<string name="ford_app_id">1765386202</string>
-    <string name="ford_dealer_url_template">http://www.ford.com/core-services/dealers/byzipcode.json?zipCode=ZIP_CODE&amp;distance=50&amp;pageSize=1&amp;pageIndex=1</string>
+	<!-- string name="ford_app_id">210228482</string--> <!-- Given to Ravi -->
+    <string name="ford_dealer_url_template">http://www.ford.com/core-services/dealers/byzipcode.json?zipCode=ZIP_CODE&amp;distance=50&amp;pageSize=PAGE_SIZE&amp;pageIndex=1</string>
     <string name="mygasfeed_url_template">http://devapi.mygasfeed.com/stations/radius/LATITUDE/LONGITUDE/5/reg/distance/rfej9napna.json</string>
     <!-- http://www.mygasfeed.com/keys/api -->
     <!-- http://devapi.mygasfeed.com//stations/radius/(Latitude)/(Longitude)/(distance)/(fuel type)/(sort by)/apikey.json?callback=? -->
     
-    <string name="maps_url_template">http://maps.google.com/maps?saddr=LATITUDE1,LONGITUDE1&amp;daddr=LATITUDE2,LONGITUDE2</string>
-    
+    <!-- string name="maps_url_template">http://maps.google.com/maps?saddr=LATITUDE1,LONGITUDE1&amp;daddr=LATITUDE2,LONGITUDE2</string-->
+    <string name="maps_url_template">http://maps.google.com/maps?daddr=LATITUDE2,LONGITUDE2</string>
     <!-- App strings -->
     <string name="app_name">iAlert</string>
     <string name="exit">Exit</string>
@@ -21,7 +22,7 @@
     <string name="main_screen_button">Connect to car</string>
     <string name="dialog_title">Connecting</string>
     <string name="dialog_text">Attempting to connect. Please check HMI for connected app.</string>
-    <string name="welcome_message">Welcome to iAlert. At any time, you can press the Sync button and say \"Get Status\", \"Get Help\" or \"Exit iAlert\"</string>
+    <string name="welcome_message">Welcome to iAlert.</string>
     <string name="welcome_screen_message_1">Welcome to</string>
     <string name="welcome_screen_message_2">iAlert.</string>
     <string name="low_tire_speak_message_1">Low tire pressure. Would you like to find and call a nearby dealer? Please say or select \"YES\" or \"NO\"</string>
