@@ -48,7 +48,7 @@ public class DashboardActivity extends AppLinkActivity {
 	protected LinearLayout mTirePressureLayout;
 	protected LinearLayout mFuelStatusLayout;
 	protected LinearLayout mBatteryStatusLayout;
-	protected LinearLayout mAirbagStatusLayout; 
+	protected LinearLayout mAirbagStatusLayout;
 
 	private VehicleReportData mVehicleReportData;
 
@@ -93,7 +93,8 @@ public class DashboardActivity extends AppLinkActivity {
 		public void onClick(View v) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					DashboardActivity.this);
-			builder.setMessage("Would you like to find the closest Ford dealer?")
+			builder.setMessage(
+					"Would you like to find the closest Ford dealer?")
 					.setPositiveButton("Yes", tirePressureDialogClickListener)
 					.setNegativeButton("No", tirePressureDialogClickListener)
 					.show();
@@ -204,11 +205,11 @@ public class DashboardActivity extends AppLinkActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		/*if (AppLinkService.getInstance() != null
+		if (AppLinkService.getInstance() != null
 				&& AppLinkService.getInstance().getProxy() == null
 				&& bluetoothAvailable()) {
 			startSyncProxy();
-		}*/ 
+		}
 	}
 
 	private boolean bluetoothAvailable() {

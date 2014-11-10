@@ -20,7 +20,7 @@ public class AppLinkActivity extends Activity {
 		super.onResume();
 		AppLinkApplication.setCurrentActivity(this);
 		activityOnTop = true;
-		LockScreenManager.updateLockScreen();
+		/*LockScreenManager.updateLockScreen();*/
 	}
 	
 	/**
