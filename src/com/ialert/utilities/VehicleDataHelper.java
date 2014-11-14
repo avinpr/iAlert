@@ -82,7 +82,7 @@ public class VehicleDataHelper {
 			return false;
 		} else {
 			Double fuelLevel = data.getFuelLevel();
-			if (fuelLevel <= ACCEPTABLE_FUEL_LEVEL)
+			if (fuelLevel < ACCEPTABLE_FUEL_LEVEL)
 				return true;
 			else
 				return false;

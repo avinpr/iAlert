@@ -25,10 +25,11 @@ public class GasStationHelper {
 	public static double mLatitude;
 	public static double mLongitude;
 	private static ProgressDialog progress;
+	private static boolean mFromActiveActivity;
 
 	public static void NavigateToClosestGasStation(Context context,
 			GPSData gpsData) {
-		GetGasStations(context, gpsData);
+		GetGasStations(context, gpsData, true);
 		/*
 		 * mContext = context; mLatitude = gpsData.getLatitudeDegrees();
 		 * mLongitude = gpsData.getLongitudeDegrees(); Thread t = new Thread(new
@@ -99,15 +100,18 @@ public class GasStationHelper {
 				gasStation.setLon(closestGasStation.getString("lng"));
 				gasStation.setStation(closestGasStation.getString("station"));
 				gasStation.setRegion(closestGasStation.getString("region"));
-				//gasStation.setCity(closestGasStation.getString("city"));
+				// gasStation.setCity(closestGasStation.getString("city"));
 				gasStation.setDistance(closestGasStation.getString("distance"));
 				gasStationList.add(gasStation);
 			}
-			if(progress != null){
+			if (progress != null) {
 				progress.dismiss();
 				progress = null;
 			}
 			Intent intent = new Intent(mContext, GasStationActivity.class);
+			if(!mFromActiveActivity){
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			}
 			intent.putExtra("gasStationList", gasStationList);
 			mContext.startActivity(intent);
 		} catch (Exception ex) {
@@ -115,12 +119,17 @@ public class GasStationHelper {
 		}
 	}
 
-	public static void GetGasStations(Context context, GPSData gpsData) {
+	public static void GetGasStations(Context context, GPSData gpsData, boolean fromActiveActivity) {
 		mContext = context;
 		mLatitude = gpsData.getLatitudeDegrees();
 		mLongitude = gpsData.getLongitudeDegrees();
-		progress = ProgressDialog.show(mContext, "Loading",
-			    "Finding gas stations", true);
+		mFromActiveActivity = fromActiveActivity;
+		try {
+			progress = ProgressDialog.show(mContext, "Loading",
+					"Finding gas stations around you", true);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 		Thread t = new Thread(new Runnable() {
 
 			@Override

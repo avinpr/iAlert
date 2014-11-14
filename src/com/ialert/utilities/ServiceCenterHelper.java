@@ -12,6 +12,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
@@ -29,6 +30,7 @@ public class ServiceCenterHelper {
 															// convention center
 	private static double mLatitude;
 	private static double mLongitude;
+	private static ProgressDialog progress;
 
 	public static void PlacePhoneCall(Context context, GPSData gpsData) {
 		GetServiceStations(context, gpsData);
@@ -131,6 +133,10 @@ public class ServiceCenterHelper {
 
 				serviceStationList.add(serviceStation);
 			}
+			if (progress != null) {
+				progress.dismiss();
+				progress = null;
+			}
 			Intent intent = new Intent(mContext, ServiceStationActivity.class);
 			intent.putExtra("serviceStationList", serviceStationList);
 			mContext.startActivity(intent);
@@ -143,6 +149,12 @@ public class ServiceCenterHelper {
 		mContext = context;
 		mLatitude = gpsData.getLatitudeDegrees();
 		mLongitude = gpsData.getLongitudeDegrees();
+		try {
+			progress = ProgressDialog.show(mContext, "Loading",
+					"Finding Ford dealers around you.", true);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 		Thread t = new Thread(new Runnable() {
 
 			@Override

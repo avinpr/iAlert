@@ -141,10 +141,11 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 
 	private boolean lowFuelAlerted = false;
 
-	private static final Double driverDistractionSpeed = 6.0; // mph
+	private static final Double driverDistractionSpeed = 5.0; // mph
 
 	private boolean pastFirstRun = false;
 	private boolean initialVehicleDataReceived = false;
+	private boolean showGasStationsOnDriverDistractionOff = false;
 
 	/**
 	 * Runnable that stops this service if there hasn't been a connection to
@@ -457,9 +458,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				// subscribe to buttons
 				subButtons();
 			} else {
-				pastFirstRun = true;
 				try {
-					if (!initialVehicleDataReceived) {
+					if (!pastFirstRun) {
+						pastFirstRun = true;
 						proxy.show("Retrieving vehicle", "data",
 								TextAlignment.CENTERED, autoIncCorrId++);
 						callGetVehicleData();
@@ -546,6 +547,11 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				callUnSubscribeVehicleData();
 				proxy.show("iAlert", "Monitoring: OFF", TextAlignment.CENTERED,
 						autoIncCorrId++);
+				if (showGasStationsOnDriverDistractionOff) {
+					GasStationHelper.GetGasStations(getApplicationContext(),
+							LocationHelper.getGPSData(getApplicationContext()),
+							false);
+				}
 			} else if (driverDistractionState == DriverDistractionState.DD_ON
 					&& proxy != null) {
 				callSubscribeVehicleData();
@@ -599,7 +605,12 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		Integer odometer = response.getOdometer();
 		PRNDL prndl = response.getPrndl();
 		Integer rpm = response.getRpm();
-		Double speed = response.getSpeed();
+		Double speed = 0.0;
+		try {
+			speed = response.getSpeed();
+		} catch (Exception ex) {
+			Log.d(AppLinkApplication.TAG, "Exception occured: " + ex);
+		}
 		Double steeringWheelAngle = response.getSteeringWheelAngle();
 		TireStatus tireStatus = response.getTirePressure();
 		String vin = response.getVin();
@@ -718,7 +729,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		msg.setInteractionMode(InteractionMode.VR_ONLY);
 		msg.setCorrelationID(corrId);
 		msg.setInitialText("Find gas station?");
-		// msg.setInitialPrompt(getTTSChunksFromString("Would you like to find the closest gas station?"));
+		msg.setInitialPrompt(getTTSChunksFromString("iAlert: We have detected that the vehicle has low fuel. Would you like to find the closest gas station?"));
 		msg.setInteractionMode(InteractionMode.BOTH);
 
 		Vector<Integer> choiceSetIDs = new Vector<Integer>();
@@ -753,8 +764,21 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 			switch (response.getChoiceID()) {
 			case 99:
 				Log.d(AppLinkApplication.TAG, "Case 99");
-				GasStationHelper.GetGasStations(getApplicationContext(),
-						LocationHelper.getGPSData(getApplicationContext()));
+				/*
+				 * GasStationHelper.GetGasStations(getApplicationContext(),
+				 * LocationHelper.getGPSData(getApplicationContext()));
+				 */
+				showGasStationsOnDriverDistractionOff = true;
+				try {
+					proxy.speak(
+							"Please pull over when possible. Your phone will then display the closest gas stations around you.",
+							autoIncCorrId++);
+					proxy.show("Low fuel level", "Pull over when possible",
+							TextAlignment.CENTERED, autoIncCorrId++);
+				} catch (SyncException e) {
+					Log.d(AppLinkApplication.TAG, "Sync exception", e);
+					e.printStackTrace();
+				}
 				break;
 			case 100:
 				Log.d(AppLinkApplication.TAG, "Case 100");
