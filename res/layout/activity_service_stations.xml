@@ -12,7 +12,7 @@
         android:gravity="center"
         android:paddingBottom="5dp"
         android:paddingTop="5dp"
-        android:text="Closest Ford service stations around you"
+        android:text="Closest Ford dealers around you"
         android:textColor="@color/white"
         android:textSize="15dp" />
 

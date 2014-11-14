@@ -66,14 +66,6 @@ public class VehicleDataHelper {
 
 	@SuppressWarnings("null")
 	public static String GetFuelStatus(VehicleReportData data) {
-		/*try {
-			if (data == null && data.getFuelStatus() == null)
-				return UNKNOWN;
-			return data.getFuelStatus().name();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return UNKNOWN;
-		}*/
 		if (data == null || data.getFuelLevel() == null) {
 			return UNKNOWN;
 		} else {
@@ -85,7 +77,7 @@ public class VehicleDataHelper {
 		}
 	}
 
-	private static boolean HasLowFuel(VehicleReportData data) {
+	public static boolean HasLowFuel(VehicleReportData data) {
 		if (data == null || data.getFuelLevel() == null) {
 			return false;
 		} else {

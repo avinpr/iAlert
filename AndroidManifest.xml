@@ -46,12 +46,12 @@
         </activity>
         <activity
             android:name="com.ialert.activity.GasStationActivity"
-            android:label="Gas Stations"
+            android:label="Gas stations"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.ialert.activity.ServiceStationActivity"
-            android:label="Gas Stations"
+            android:label="Ford dealers"
             android:screenOrientation="portrait" >
         </activity>
 

@@ -94,7 +94,7 @@ public class DashboardActivity extends AppLinkActivity {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					DashboardActivity.this);
 			builder.setMessage(
-					"Would you like to find the closest Ford dealer?")
+					"Would you like us to find the closest Ford dealers?")
 					.setPositiveButton("Yes", tirePressureDialogClickListener)
 					.setNegativeButton("No", tirePressureDialogClickListener)
 					.show();
@@ -136,7 +136,7 @@ public class DashboardActivity extends AppLinkActivity {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					DashboardActivity.this);
 			builder.setMessage(
-					"Would you like to find the closest gas station?")
+					"Would you like us to find the closest gas stations?")
 					.setPositiveButton("Yes", fuelStatusDialogClickListener)
 					.setNegativeButton("No", fuelStatusDialogClickListener)
 					.show();
@@ -322,10 +322,10 @@ public class DashboardActivity extends AppLinkActivity {
 								.GetRightFrontTirePressureStatus(data));
 						mLeftFront.setText(VehicleDataHelper
 								.GetLeftFrontTirePressureStatus(data));
-						String fuelStatus = VehicleDataHelper
-								.GetFuelStatus(data);
-						mFuelStatus.setText(fuelStatus);
-						if (fuelStatus == VehicleDataHelper.LOW_STATUS) {
+						boolean fuelStatus = VehicleDataHelper.HasLowFuel(data);
+						mFuelStatus.setText(VehicleDataHelper
+								.GetFuelStatus(data));
+						if (fuelStatus) {
 							mFuelStatus.setTextColor(Color.RED);
 						}
 

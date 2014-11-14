@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,41 +51,52 @@ public class GasStationAdapter extends BaseAdapter {
 					.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 			convertView = mInflater.inflate(R.layout.gas_station, null);
 		}
-		TextView gasStationName = (TextView) convertView
+		final TextView gasStationName = (TextView) convertView
 				.findViewById(R.id.gasStationName);
-		TextView gasStationAddress = (TextView) convertView
+		final TextView gasStationAddress = (TextView) convertView
 				.findViewById(R.id.gasStationAddress);
-		TextView gasStationDistance = (TextView) convertView
+		final TextView gasStationDistance = (TextView) convertView
 				.findViewById(R.id.gasStationDistance);
-		TextView gasStationPrice = (TextView) convertView
+		final TextView gasStationPrice = (TextView) convertView
 				.findViewById(R.id.gasStationPrice);
-		ImageView gasStationIcon = (ImageView) convertView
+		final ImageView gasStationIcon = (ImageView) convertView
 				.findViewById(R.id.gasStationIcon);
 
-		GasStation gasStation = mGasStationList.get(position);
-		gasStationName.setText(gasStation.getStation());
-		gasStationAddress.setText(gasStation.getAddress());
-		gasStationDistance.setText(gasStation.getDistance());
-		gasStationPrice.setText("Price: $" + gasStation.getPrice());
-		int intGasStationIcon = GetGasStationIcon(gasStation.getStation());
-		gasStationIcon.setImageResource(R.drawable.fuel);
-		if (intGasStationIcon != 0) {
-			gasStationIcon.setImageResource(intGasStationIcon);
-			notifyDataSetChanged();
-		}
+		final GasStation gasStation = mGasStationList.get(position);
+		new Handler().post(new Runnable() {
+			@Override
+			public void run() {
+				gasStationName.setText(gasStation.getStation());
+				gasStationAddress.setText(gasStation.getAddress());
+				gasStationDistance.setText(gasStation.getDistance());
+				gasStationPrice.setText("Reg.price: $" + gasStation.getPrice());
+				int intGasStationIcon = GetGasStationIcon(gasStation
+						.getStation());
+				if (intGasStationIcon != 0) {
+					gasStationIcon.setImageResource(intGasStationIcon);
+					notifyDataSetChanged();
+				} else {
+					gasStationIcon.setImageResource(R.drawable.fuel);
+				}
+			}
+		});
 		return convertView;
 	}
 
 	private int GetGasStationIcon(String gasStationName) {
 		int gasStationIcon = 0;
-		if (gasStationName.equals("Xtramart"))
+		if (gasStationName.equalsIgnoreCase("Xtramart"))
 			gasStationIcon = R.drawable.xtramart;
-		else if (gasStationName.equals("Sunoco"))
+		else if (gasStationName.equalsIgnoreCase("Sunoco"))
 			gasStationIcon = R.drawable.sunoco;
-		else if (gasStationName.equals("Shell"))
+		else if (gasStationName.equalsIgnoreCase("Shell"))
 			gasStationIcon = R.drawable.shell;
-		else if (gasStationName.equals("Citgo"))
+		else if (gasStationName.equalsIgnoreCase("Citgo"))
 			gasStationIcon = R.drawable.citgo;
+		else if (gasStationName.equalsIgnoreCase("Marathon"))
+			gasStationIcon = R.drawable.marathon;
+		else if (gasStationName.equalsIgnoreCase("BP"))
+			gasStationIcon = R.drawable.bp;
 		return gasStationIcon;
 	}
 

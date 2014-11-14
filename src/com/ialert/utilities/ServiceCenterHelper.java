@@ -119,6 +119,7 @@ public class ServiceCenterHelper {
 						.getString("Distance"));
 				serviceStation.setEmail(serviceStationObj.getString("Email"));
 				serviceStation.setFax(serviceStationObj.getString("Fax"));
+				serviceStation.setAppointmentUrl(serviceStationObj.getString("serviceAppointmentURL"));
 
 				JSONObject addressObj = serviceStationObj
 						.getJSONObject("Address");

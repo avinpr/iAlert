@@ -17,6 +17,7 @@ public class ServiceStation implements Parcelable {
 	private String phone;
 	private String url;
 	private String fax;
+	private String appointmentUrl;
 
 	public ServiceStation() {
 		this.country = "";
@@ -32,6 +33,7 @@ public class ServiceStation implements Parcelable {
 		this.phone = "";
 		this.url = "";
 		this.fax = "";
+		this.appointmentUrl = "";
 	}
 
 	public ServiceStation(Parcel in) {
@@ -48,6 +50,7 @@ public class ServiceStation implements Parcelable {
 		this.phone = in.readString();
 		this.url = in.readString();
 		this.fax = in.readString();
+		this.appointmentUrl = in.readString();
 	}
 
 	public String getCity() {
@@ -162,6 +165,14 @@ public class ServiceStation implements Parcelable {
 		this.name = name;
 	}
 
+	public String getAppointmentUrl() {
+		return appointmentUrl;
+	}
+
+	public void setAppointmentUrl(String appointmentUrl) {
+		this.appointmentUrl = appointmentUrl;
+	}
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -182,6 +193,7 @@ public class ServiceStation implements Parcelable {
 		dest.writeString(this.phone);
 		dest.writeString(this.url);
 		dest.writeString(this.fax);
+		dest.writeString(this.appointmentUrl);
 	}
 
 	public static final Parcelable.Creator<ServiceStation> CREATOR = new Parcelable.Creator<ServiceStation>() {

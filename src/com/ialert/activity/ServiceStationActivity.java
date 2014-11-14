@@ -24,6 +24,19 @@ import com.ialert.utilities.ServiceStationAdapter;
 
 public class ServiceStationActivity extends Activity {
 
+	protected boolean mPopupShowing = false;
+	protected PopupWindow popupWindow;
+	protected ServiceStation serviceStation;
+
+	private View.OnClickListener mCloseListener = new View.OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			popupWindow.dismiss();
+			mPopupShowing = false;
+		}
+	};
+
 	@Override
 	protected void onCreate(android.os.Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -63,9 +76,11 @@ public class ServiceStationActivity extends Activity {
 								.findViewById(R.id.popServiceCenterCall);
 						Button viewWebsite = (Button) popupView
 								.findViewById(R.id.popServiceCenterViewWebsite);
+						Button makeAppointment = (Button) popupView
+								.findViewById(R.id.popServiceCenterMakeAppointment);
 
-						final ServiceStation serviceStation = (ServiceStation) parent
-								.getAdapter().getItem(position);
+						serviceStation = (ServiceStation) parent.getAdapter()
+								.getItem(position);
 						name.setText(serviceStation.getName());
 						phone.setText(serviceStation.getPhone());
 						fax.setText(serviceStation.getFax());
@@ -75,16 +90,10 @@ public class ServiceStationActivity extends Activity {
 								+ serviceStation.getRegion() + ", "
 								+ serviceStation.getZip();
 						address.setText(strAddress);
-						final PopupWindow popupWindow = new PopupWindow(
-								popupView, LayoutParams.MATCH_PARENT,
+						popupWindow = new PopupWindow(popupView,
+								LayoutParams.MATCH_PARENT,
 								LayoutParams.MATCH_PARENT);
-						close.setOnClickListener(new View.OnClickListener() {
-
-							@Override
-							public void onClick(View arg0) {
-								popupWindow.dismiss();
-							}
-						});
+						close.setOnClickListener(mCloseListener);
 						navigate.setOnClickListener(new View.OnClickListener() {
 
 							@Override
@@ -127,23 +136,22 @@ public class ServiceStationActivity extends Activity {
 										startActivity(browserIntent);
 									}
 								});
+						makeAppointment
+								.setOnClickListener(new View.OnClickListener() {
+
+									@Override
+									public void onClick(View arg0) {
+										Intent browserIntent = new Intent(
+												Intent.ACTION_VIEW,
+												Uri.parse(serviceStation
+														.getAppointmentUrl()));
+										startActivity(browserIntent);
+									}
+								});
 
 						popupWindow.showAtLocation(mainView, Gravity.CENTER,
 								10, 10);
-						/*
-						 * GasStation gasStation = (GasStation)
-						 * parent.getAdapter() .getItem(position); String
-						 * gasStationAddress =
-						 * getString(R.string.maps_url_template)
-						 * .replaceAll("LATITUDE1",
-						 * String.valueOf(GasStationHelper.mLatitude))
-						 * .replaceAll("LONGITUDE1",
-						 * String.valueOf(GasStationHelper.mLongitude))
-						 * .replaceAll("LATITUDE2", gasStation.getLat())
-						 * .replaceAll("LONGITUDE2", gasStation.getLon());
-						 * Intent navIntent = new Intent(Intent.ACTION_VIEW, Uri
-						 * .parse(gasStationAddress)); startActivity(navIntent);
-						 */
+						mPopupShowing = true;
 					}
 				});
 	}

@@ -17,7 +17,7 @@ public class AppLinkApplication extends Application {
 	public static final String TAG = "iAlert"; // Global TAG used in logging
 	private static AppLinkApplication instance;
 	private static Activity currentUIActivity;
-	private static boolean mRunInTdk = false;
+	private static boolean mRunInTdk = true;
 
 	static {
 		instance = null;

@@ -10,6 +10,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,6 +24,7 @@ public class GasStationHelper {
 	protected static Context mContext;
 	public static double mLatitude;
 	public static double mLongitude;
+	private static ProgressDialog progress;
 
 	public static void NavigateToClosestGasStation(Context context,
 			GPSData gpsData) {
@@ -101,6 +103,10 @@ public class GasStationHelper {
 				gasStation.setDistance(closestGasStation.getString("distance"));
 				gasStationList.add(gasStation);
 			}
+			if(progress != null){
+				progress.dismiss();
+				progress = null;
+			}
 			Intent intent = new Intent(mContext, GasStationActivity.class);
 			intent.putExtra("gasStationList", gasStationList);
 			mContext.startActivity(intent);
@@ -113,6 +119,8 @@ public class GasStationHelper {
 		mContext = context;
 		mLatitude = gpsData.getLatitudeDegrees();
 		mLongitude = gpsData.getLongitudeDegrees();
+		progress = ProgressDialog.show(mContext, "Loading",
+			    "Finding gas stations", true);
 		Thread t = new Thread(new Runnable() {
 
 			@Override
