@@ -1,7 +1,11 @@
 package com.ialert.activity;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -12,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -275,7 +280,7 @@ public class DashboardActivity extends AppLinkActivity {
 			AppLinkApplication.getInstance().setRunInTdk(!runInTdk);
 			String message = getString(R.string.menu_tdk_toast_message)
 					+ !runInTdk;
-			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 			return true;
 		case R.id.history:
 			startHistoryActivity();
@@ -322,10 +327,10 @@ public class DashboardActivity extends AppLinkActivity {
 								.GetRightFrontTirePressureStatus(data));
 						mLeftFront.setText(VehicleDataHelper
 								.GetLeftFrontTirePressureStatus(data));
-						boolean fuelStatus = VehicleDataHelper.HasLowFuel(data);
+						boolean hasLowFuel = VehicleDataHelper.HasLowFuel(data);
 						mFuelStatus.setText(VehicleDataHelper
-								.GetFuelStatus(data));
-						if (fuelStatus) {
+								.GetFuelLevel(data));
+						if (hasLowFuel) {
 							mFuelStatus.setTextColor(Color.RED);
 						}
 
@@ -334,6 +339,13 @@ public class DashboardActivity extends AppLinkActivity {
 						mAirbagStatus.setText(airbagStatus);
 						if (airbagStatus == VehicleDataHelper.ALERT_STATUS) {
 							mAirbagStatus.setTextColor(Color.RED);
+						}
+
+						String batteryStatus = VehicleDataHelper
+								.GetBatteryStatus(data);
+						mBatteryStatus.setText(batteryStatus);
+						if (batteryStatus == VehicleDataHelper.ALERT_STATUS) {
+							mBatteryStatus.setTextColor(Color.RED);
 						}
 
 						// mVinNumber.setText(VehicleDataHelper.GetVin(data));
@@ -345,6 +357,38 @@ public class DashboardActivity extends AppLinkActivity {
 			}
 		});
 		t.start();
+		if (VehicleDataHelper.HasAnyAlert(data)) {
+			//SaveToHistory();
+		}
+	}
+
+	private void SaveToHistory() {
+		SharedPreferences sharedPrefs = this.getSharedPreferences(mSharedPrefs,
+				Context.MODE_PRIVATE);
+		JSONObject json;
+		if (!sharedPrefs.contains(Constants.HISTORY)) {
+			json = new JSONObject();
+			String currentDateString = getCurrentDateAndTime();
+			try {
+				json.put("dateTime", currentDateString);
+				json.put("vin", mVehicleReportData.getVin());
+				JSONObject alertsObj = new JSONObject();
+				ArrayList alerts = new ArrayList();
+				JSONArray alertArray = new JSONArray();
+				if(VehicleDataHelper.IsTirePressureLow(mVehicleReportData)){
+					JSONObject alertObj = new JSONObject();
+					alertObj.put("type", Constants.HISTORY_LOW_TIRE_PRESSURE);
+					alertObj.put("vin", mVehicleReportData.getVin());
+					alertObj.put("dateTime", getCurrentDateAndTime());
+					alertObj.put("name", Constants.HISTORY_LOW_TIRE_PRESSURE_NAME);
+					JSONArray detailArray = new JSONArray();
+					
+				}
+				//alertObj.put("name", value)
+			} catch (Exception ex) {
+				Log.d(AppLinkApplication.TAG, ex.toString());
+			}
+		}
 	}
 
 	private void saveToSharedPrefs() {

@@ -4,8 +4,11 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import com.ford.syncV4.proxy.rpc.AirbagStatus;
+import com.ford.syncV4.proxy.rpc.DeviceStatus;
 import com.ford.syncV4.proxy.rpc.enums.ComponentVolumeStatus;
+import com.ford.syncV4.proxy.rpc.enums.DeviceLevelStatus;
 import com.ford.syncV4.proxy.rpc.enums.VehicleDataEventStatus;
+import com.ialert.activity.Constants;
 import com.ialert.activity.VehicleReportData;
 
 public class VehicleDataHelper {
@@ -20,52 +23,95 @@ public class VehicleDataHelper {
 		if (data == null || data.getAirbagStatus() == null)
 			return UNKNOWN;
 		AirbagStatus status = data.getAirbagStatus();
-		if (status.getDriverAirbagDeployed().compareTo(
-				VehicleDataEventStatus.FAULT) == 0
-				|| status.getDriverCurtainAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0
-				|| status.getDriverKneeAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0
-				|| status.getDriverSideAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0
-				|| status.getPassengerAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0
-				|| status.getPassengerCurtainAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0
-				|| status.getPassengerKneeAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0
-				|| status.getPassengerSideAirbagDeployed().compareTo(
-						VehicleDataEventStatus.FAULT) == 0) {
+		if (status.getDriverAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getDriverCurtainAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getDriverKneeAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getDriverSideAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getPassengerAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getPassengerCurtainAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getPassengerKneeAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getPassengerSideAirbagDeployed() == VehicleDataEventStatus.FAULT
+				|| status.getDriverAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getDriverCurtainAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getDriverKneeAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getDriverSideAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getPassengerAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getPassengerCurtainAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getPassengerKneeAirbagDeployed() == VehicleDataEventStatus.YES
+				|| status.getPassengerSideAirbagDeployed() == VehicleDataEventStatus.YES) {
 			return ALERT_STATUS;
 		} else {
 			return NORMAL_STATUS;
 		}
 	}
 
-	public static Boolean IsTirePressureLow(VehicleReportData data) {
+	public static boolean HasBadAirbag(VehicleReportData data) {
+		return GetAirbagStatus(data) == VehicleDataHelper.ALERT_STATUS;
+	}
+
+	public static boolean IsTirePressureLow(VehicleReportData data) {
 		if (data == null || data.getTireStatus() == null)
 			return false;
-		Vector<ComponentVolumeStatus> tireStatuses = new Vector<ComponentVolumeStatus>();
-		tireStatuses.add(data.getTireStatus().getLeftRear().getStatus());
-		tireStatuses.add(data.getTireStatus().getRightRear().getStatus());
-		tireStatuses.add(data.getTireStatus().getRightRear().getStatus());
-		tireStatuses.add(data.getTireStatus().getLeftRear().getStatus());
 
-		boolean lowPressureIndicator = false;
-		Iterator<ComponentVolumeStatus> iter = tireStatuses.iterator();
+		Vector<TirePressure> lowTireStatuses = GetLowTirePressureStatuses(data);
+		if (!lowTireStatuses.isEmpty()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static Vector<TirePressure> GetTirePressureStatuses(
+			VehicleReportData data) {
+		Vector<TirePressure> tireStatuses = new Vector<TirePressure>();
+
+		TirePressure leftRearPressure = new TirePressure();
+		leftRearPressure.setName(Constants.LEFT_REAR);
+		leftRearPressure.setStatus(data.getTireStatus().getLeftRear()
+				.getStatus());
+		tireStatuses.add(leftRearPressure);
+
+		TirePressure rightRearPressure = new TirePressure();
+		rightRearPressure.setName(Constants.RIGHT_REAR);
+		rightRearPressure.setStatus(data.getTireStatus().getRightRear()
+				.getStatus());
+		tireStatuses.add(rightRearPressure);
+
+		TirePressure leftFrontPressure = new TirePressure();
+		leftFrontPressure.setName(Constants.LEFT_FRONT);
+		leftFrontPressure.setStatus(data.getTireStatus().getLeftFront()
+				.getStatus());
+		tireStatuses.add(leftFrontPressure);
+
+		TirePressure rightFrontPressure = new TirePressure();
+		rightFrontPressure.setName(Constants.RIGHT_FRONT);
+		rightFrontPressure.setStatus(data.getTireStatus().getRightFront()
+				.getStatus());
+		tireStatuses.add(rightFrontPressure);
+
+		return tireStatuses;
+	}
+
+	public static Vector<TirePressure> GetLowTirePressureStatuses(
+			VehicleReportData data) {
+		Vector<TirePressure> lowTireStatuses = new Vector<TirePressure>();
+		Vector<TirePressure> tireStatuses = GetTirePressureStatuses(data);
+		Iterator<TirePressure> iter = tireStatuses.iterator();
 		while (iter.hasNext()) {
-			ComponentVolumeStatus status = iter.next();
-			if (status.compareTo(ComponentVolumeStatus.ALERT) == 0
-					|| status.compareTo(ComponentVolumeStatus.LOW) == 0
-					|| status.compareTo(ComponentVolumeStatus.FAULT) == 0) {
-				lowPressureIndicator = true;
+			TirePressure tirePressure = iter.next();
+			if (tirePressure.getStatus().compareTo(ComponentVolumeStatus.ALERT) == 0
+					|| tirePressure.getStatus().compareTo(
+							ComponentVolumeStatus.LOW) == 0
+					|| tirePressure.getStatus().compareTo(
+							ComponentVolumeStatus.FAULT) == 0) {
+				lowTireStatuses.add(tirePressure);
 			}
 		}
-		return lowPressureIndicator;
+		return lowTireStatuses;
 	}
 
 	@SuppressWarnings("null")
-	public static String GetFuelStatus(VehicleReportData data) {
+	public static String GetFuelLevel(VehicleReportData data) {
 		if (data == null || data.getFuelLevel() == null) {
 			return UNKNOWN;
 		} else {
@@ -86,6 +132,19 @@ public class VehicleDataHelper {
 				return true;
 			else
 				return false;
+		}
+	}
+
+	public static boolean HasLowFuelStatus(VehicleReportData data) {
+		if (data == null || data.getFuelStatus() == null) {
+			return false;
+		} else {
+			ComponentVolumeStatus fuelStatus = data.getFuelStatus();
+			if (fuelStatus == ComponentVolumeStatus.ALERT
+					|| fuelStatus == ComponentVolumeStatus.LOW) {
+				return true;
+			}
+			return false;
 		}
 	}
 
@@ -124,5 +183,36 @@ public class VehicleDataHelper {
 			return UNKNOWN;
 		}
 		return data.getVin();
+	}
+
+	public static String GetBatteryStatus(VehicleReportData data) {
+		if (data == null || data.getDeviceStatus() == null) {
+			return UNKNOWN;
+		}
+		DeviceStatus deviceStatus = data.getDeviceStatus();
+		if (deviceStatus.getBattLevelStatus() == null) {
+			return UNKNOWN;
+		} else {
+			DeviceLevelStatus battStatus = deviceStatus.getBattLevelStatus();
+			if (battStatus.compareTo(DeviceLevelStatus.ZERO_LEVEL_BARS) == 0
+					|| battStatus.compareTo(DeviceLevelStatus.ONE_LEVEL_BARS) == 0) {
+				return ALERT_STATUS;
+			}
+		}
+		return NORMAL_STATUS;
+	}
+
+	public static boolean HasBadBatteryStatus(VehicleReportData data) {
+		String batteryStatus = GetBatteryStatus(data);
+		if (batteryStatus.equals(ALERT_STATUS)) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean HasAnyAlert(VehicleReportData data) {
+		return IsTirePressureLow(data) || HasLowFuel(data)
+				|| HasLowFuelStatus(data) || HasBadBatteryStatus(data)
+				|| HasBadAirbag(data);
 	}
 }

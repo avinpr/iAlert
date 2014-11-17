@@ -444,10 +444,11 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				// setup app on SYNC
 				// send welcome message if applicable
 				try {
+					playAudio();
 					if (RUN_IN_ALE && !initialVehicleDataReceived) {
 						callGetVehicleData();
+						pastFirstRun = true;
 					}
-					playAudio();
 					proxy.show(getStr(R.string.welcome_screen_message_1),
 							getStr(R.string.welcome_screen_message_2),
 							TextAlignment.CENTERED, autoIncCorrId++);
@@ -624,6 +625,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		data.setAirbagStatus(airbagStatus);
 		data.setOdometer(odometer);
 		data.setVin(vin);
+		data.setDeviceStatus(deviceStatus);
 
 		if (speed > driverDistractionSpeed) {
 			try {
@@ -700,7 +702,8 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		data.setOdometer(odometer);
 		data.setVin(vin);
 
-		if (VehicleDataHelper.GetFuelStatus(data) == VehicleDataHelper.LOW_STATUS) {
+		if (VehicleDataHelper.HasLowFuel(data)
+				|| VehicleDataHelper.HasLowFuelStatus(data)) {
 			if (!lowFuelAlerted) {
 				try {
 					/*

@@ -1,6 +1,7 @@
 package com.ialert.activity;
 
 import com.ford.syncV4.proxy.rpc.AirbagStatus;
+import com.ford.syncV4.proxy.rpc.DeviceStatus;
 import com.ford.syncV4.proxy.rpc.GPSData;
 import com.ford.syncV4.proxy.rpc.TireStatus;
 import com.ford.syncV4.proxy.rpc.enums.ComponentVolumeStatus;
@@ -13,6 +14,7 @@ public class VehicleReportData {
 	private AirbagStatus airbagStatus;
 	private Integer odometer;
 	private String vin;
+	private DeviceStatus deviceStatus;
 	
 	public String getVin() {
 		return vin;
@@ -55,5 +57,11 @@ public class VehicleReportData {
 	}
 	public void setOdometer(Integer odometer) {
 		this.odometer = odometer;
+	}
+	public DeviceStatus getDeviceStatus() {
+		return deviceStatus;
+	}
+	public void setDeviceStatus(DeviceStatus deviceStatus) {
+		this.deviceStatus = deviceStatus;
 	}
 }

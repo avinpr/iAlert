@@ -38,6 +38,16 @@ public class ServiceStationActivity extends Activity {
 	};
 
 	@Override
+	public void onBackPressed() {
+		if (mPopupShowing) {
+			popupWindow.dismiss();
+			mPopupShowing = false;
+		} else {
+			super.onBackPressed();
+		}
+	}
+
+	@Override
 	protected void onCreate(android.os.Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_service_stations);

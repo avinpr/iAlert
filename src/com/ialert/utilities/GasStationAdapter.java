@@ -63,23 +63,24 @@ public class GasStationAdapter extends BaseAdapter {
 				.findViewById(R.id.gasStationIcon);
 
 		final GasStation gasStation = mGasStationList.get(position);
-		new Handler().post(new Runnable() {
-			@Override
-			public void run() {
-				gasStationName.setText(gasStation.getStation());
-				gasStationAddress.setText(gasStation.getAddress());
-				gasStationDistance.setText(gasStation.getDistance());
-				gasStationPrice.setText("Reg.price: $" + gasStation.getPrice());
-				int intGasStationIcon = GetGasStationIcon(gasStation
-						.getStation());
-				if (intGasStationIcon != 0) {
-					gasStationIcon.setImageResource(intGasStationIcon);
-					notifyDataSetChanged();
-				} else {
-					gasStationIcon.setImageResource(R.drawable.fuel);
-				}
+		gasStationName.setText(gasStation.getStation());
+		gasStationAddress.setText(gasStation.getAddress());
+		gasStationDistance.setText(gasStation.getDistance());
+		gasStationPrice.setText("Price: $" + gasStation.getPrice());
+		int intGasStationIcon = GetGasStationIcon(gasStation.getStation());
+
+		// The Nexus S is crashing (while the Nexus 5 is not) when trying to
+		// change icons.I'm about to do the dumbest thing in all of
+		// programming!!!
+		String model = android.os.Build.MODEL;
+		if (model.equalsIgnoreCase("Nexus 5")) {
+			if (intGasStationIcon != 0) {
+				gasStationIcon.setImageResource(intGasStationIcon);
+				notifyDataSetChanged();
+			} else {
+				gasStationIcon.setImageResource(R.drawable.fuel);
 			}
-		});
+		}
 		return convertView;
 	}
 
