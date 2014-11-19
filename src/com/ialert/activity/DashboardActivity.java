@@ -3,8 +3,9 @@ package com.ialert.activity;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Vector;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
@@ -32,6 +33,7 @@ import com.ialert.applink.AppLinkService;
 import com.ialert.utilities.GasStationHelper;
 import com.ialert.utilities.LocationHelper;
 import com.ialert.utilities.ServiceCenterHelper;
+import com.ialert.utilities.TirePressure;
 import com.ialert.utilities.VehicleDataHelper;
 
 public class DashboardActivity extends AppLinkActivity {
@@ -70,7 +72,8 @@ public class DashboardActivity extends AppLinkActivity {
 		public void onClick(DialogInterface dialog, int which) {
 			switch (which) {
 			case DialogInterface.BUTTON_POSITIVE:
-				if (mVehicleReportData != null) {
+				if (mVehicleReportData != null
+						&& mVehicleReportData.getGpsData() != null) {
 					ServiceCenterHelper.PlacePhoneCall(DashboardActivity.this,
 							mVehicleReportData.getGpsData());
 				} else {
@@ -111,7 +114,8 @@ public class DashboardActivity extends AppLinkActivity {
 		public void onClick(DialogInterface dialog, int which) {
 			switch (which) {
 			case DialogInterface.BUTTON_POSITIVE:
-				if (mVehicleReportData != null) {
+				if (mVehicleReportData != null
+						&& mVehicleReportData.getGpsData() != null) {
 					GasStationHelper.NavigateToClosestGasStation(
 							DashboardActivity.this,
 							mVehicleReportData.getGpsData());
@@ -358,7 +362,7 @@ public class DashboardActivity extends AppLinkActivity {
 		});
 		t.start();
 		if (VehicleDataHelper.HasAnyAlert(data)) {
-			//SaveToHistory();
+			// SaveToHistory();
 		}
 	}
 
@@ -374,17 +378,27 @@ public class DashboardActivity extends AppLinkActivity {
 				json.put("vin", mVehicleReportData.getVin());
 				JSONObject alertsObj = new JSONObject();
 				ArrayList alerts = new ArrayList();
-				JSONArray alertArray = new JSONArray();
-				if(VehicleDataHelper.IsTirePressureLow(mVehicleReportData)){
+				if (VehicleDataHelper.IsTirePressureLow(mVehicleReportData)) {
 					JSONObject alertObj = new JSONObject();
 					alertObj.put("type", Constants.HISTORY_LOW_TIRE_PRESSURE);
 					alertObj.put("vin", mVehicleReportData.getVin());
 					alertObj.put("dateTime", getCurrentDateAndTime());
-					alertObj.put("name", Constants.HISTORY_LOW_TIRE_PRESSURE_NAME);
-					JSONArray detailArray = new JSONArray();
-					
+					alertObj.put("name",
+							Constants.HISTORY_LOW_TIRE_PRESSURE_NAME);
+					ArrayList detailArray = new ArrayList();
+					Vector<TirePressure> lowTirePressures = VehicleDataHelper
+							.GetLowTirePressureStatuses(mVehicleReportData);
+					Iterator<TirePressure> iter = lowTirePressures.iterator();
+					while (iter.hasNext()) {
+						TirePressure tirePressure = iter.next();
+						JSONObject detail = new JSONObject();
+						detail.put("position", tirePressure.getName());
+						detail.put("status", tirePressure.getStatus().name());
+						detailArray.add(detail);
+					}
+					alerts.add(detailArray);
 				}
-				//alertObj.put("name", value)
+				// alertObj.put("name", value)
 			} catch (Exception ex) {
 				Log.d(AppLinkApplication.TAG, ex.toString());
 			}

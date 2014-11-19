@@ -627,7 +627,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		data.setVin(vin);
 		data.setDeviceStatus(deviceStatus);
 
-		if (speed > driverDistractionSpeed) {
+		if (speed != null && speed > driverDistractionSpeed) {
 			try {
 				LockScreenManager
 						.setDriverDistractionState(DriverDistractionState.DD_ON);
