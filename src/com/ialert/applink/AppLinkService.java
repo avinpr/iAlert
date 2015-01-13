@@ -19,6 +19,7 @@ import com.ford.syncV4.proxy.RPCResponse;
 import com.ford.syncV4.proxy.SyncProxyALM;
 import com.ford.syncV4.proxy.TTSChunkFactory;
 import com.ford.syncV4.proxy.interfaces.IProxyListenerALM;
+import com.ford.syncV4.proxy.rpc.AddCommand;
 import com.ford.syncV4.proxy.rpc.AddCommandResponse;
 import com.ford.syncV4.proxy.rpc.AddSubMenuResponse;
 import com.ford.syncV4.proxy.rpc.AirbagStatus;
@@ -44,6 +45,7 @@ import com.ford.syncV4.proxy.rpc.GetDTCsResponse;
 import com.ford.syncV4.proxy.rpc.GetVehicleDataResponse;
 import com.ford.syncV4.proxy.rpc.HeadLampStatus;
 import com.ford.syncV4.proxy.rpc.ListFilesResponse;
+import com.ford.syncV4.proxy.rpc.MenuParams;
 import com.ford.syncV4.proxy.rpc.MyKey;
 import com.ford.syncV4.proxy.rpc.OnAudioPassThru;
 import com.ford.syncV4.proxy.rpc.OnButtonEvent;
@@ -119,6 +121,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	private final int YES = 1000;
 	private final int NO = 1001;
 
+	private final int COMMAND_FIND_GAS_STATIONS = 10001;
+	private final int COMMAND_FIND_SERVICE_STATIONS = 10002;
+
 	private boolean RUN_IN_ALE = false;
 
 	private int PORT = 12345;// Use this port number to connect to ALE
@@ -136,7 +141,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	Vector<ComponentVolumeStatus> tireStatuses = new Vector<ComponentVolumeStatus>();
 
 	// Service shutdown timing constants
-	private static final int CONNECTION_TIMEOUT = 60000;
+	private static final int CONNECTION_TIMEOUT = 100000;
 	private static final int STOP_SERVICE_DELAY = 5000;
 
 	private boolean lowFuelAlerted = false;
@@ -457,6 +462,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				}
 				// send addcommands
 				// subscribe to buttons
+				addCommands();
 				subButtons();
 			} else {
 				try {
@@ -485,6 +491,82 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		}
 	}
 
+	private void addCommands() {
+		AddCommand msg = new AddCommand();
+		msg.setCmdID(COMMAND_FIND_GAS_STATIONS);
+
+		String menuName = "Gas Stations";
+		MenuParams menuParams = new MenuParams();
+		menuParams.setMenuName(menuName);
+		msg.setMenuParams(menuParams);
+
+		// Build voice recognition commands
+		Vector<String> vrCommands = new Vector<String>();
+		vrCommands.add("Gas stations");
+		vrCommands.add("Find gas stations");
+		vrCommands.add("Gas station");
+		msg.setVrCommands(vrCommands);
+
+		// Set the correlation ID
+		int correlationId = autoIncCorrId++;
+		msg.setCorrelationID(correlationId);
+
+		AddCommand msg2 = new AddCommand();
+		msg2.setCmdID(COMMAND_FIND_SERVICE_STATIONS);
+
+		String menuName2 = "Gas Stations";
+		MenuParams menuParams2 = new MenuParams();
+		menuParams2.setMenuName(menuName2);
+		msg2.setMenuParams(menuParams2);
+
+		// Build voice recognition commands
+		Vector<String> vrCommands2 = new Vector<String>();
+		vrCommands2.add("Service stations");
+		vrCommands2.add("Find service stations");
+		vrCommands2.add("Service station");
+		msg2.setVrCommands(vrCommands2);
+
+		// Set the correlation ID
+		int correlationId2 = autoIncCorrId++;
+		msg2.setCorrelationID(correlationId2);
+
+		// Send to proxy
+		try {
+			proxy.sendRPCRequest(msg);
+			proxy.sendRPCRequest(msg2);
+		} catch (SyncException e) {
+			Log.i(AppLinkApplication.TAG,
+					"sync exception" + e.getMessage()
+							+ e.getSyncExceptionCause());
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onOnCommand(OnCommand notification) {
+		// Get identifier for the command
+		int cmdID = notification.getCmdID();
+
+		// Determine which command was selected
+		if (cmdID == COMMAND_FIND_GAS_STATIONS) {
+			showGasStationList();
+		} else if (cmdID == COMMAND_FIND_SERVICE_STATIONS) {
+			try {
+				proxy.speak("You asked to find service stations", autoIncCorrId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void showGasStationList() {
+		LockScreenManager
+				.setDriverDistractionState(DriverDistractionState.DD_OFF);
+		LockScreenManager.updateLockScreen();
+		GasStationHelper.GetGasStations(getApplicationContext(),
+				LocationHelper.getGPSData(getApplicationContext()), false);
+	}
+
 	private void callSubscribeVehicleData() {
 		try {
 			proxy.subscribevehicledata(Constants.GPS_DATA,
@@ -505,7 +587,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 					Constants.CLUSTER_MODE_STATUS_DATA, Constants.MY_KEY_DATA,
 					autoIncCorrId++);
 		} catch (SyncException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -530,7 +611,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 					Constants.CLUSTER_MODE_STATUS_DATA, Constants.MY_KEY_DATA,
 					autoIncCorrId++);
 		} catch (SyncException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -914,11 +994,6 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	@Override
 	public void onGenericResponse(GenericResponse response) {
 		log(response);
-	}
-
-	@Override
-	public void onOnCommand(OnCommand notification) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override

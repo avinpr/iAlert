@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
@@ -378,30 +379,33 @@ public class DashboardActivity extends AppLinkActivity {
 				json.put("vin", mVehicleReportData.getVin());
 				JSONObject alertsObj = new JSONObject();
 				ArrayList alerts = new ArrayList();
-				if (VehicleDataHelper.IsTirePressureLow(mVehicleReportData)) {
-					JSONObject alertObj = new JSONObject();
-					alertObj.put("type", Constants.HISTORY_LOW_TIRE_PRESSURE);
-					alertObj.put("vin", mVehicleReportData.getVin());
-					alertObj.put("dateTime", getCurrentDateAndTime());
-					alertObj.put("name",
-							Constants.HISTORY_LOW_TIRE_PRESSURE_NAME);
-					ArrayList detailArray = new ArrayList();
-					Vector<TirePressure> lowTirePressures = VehicleDataHelper
-							.GetLowTirePressureStatuses(mVehicleReportData);
-					Iterator<TirePressure> iter = lowTirePressures.iterator();
-					while (iter.hasNext()) {
-						TirePressure tirePressure = iter.next();
-						JSONObject detail = new JSONObject();
-						detail.put("position", tirePressure.getName());
-						detail.put("status", tirePressure.getStatus().name());
-						detailArray.add(detail);
-					}
-					alerts.add(detailArray);
-				}
-				// alertObj.put("name", value)
+				buildTireAlertHistory(alerts);
 			} catch (Exception ex) {
 				Log.d(AppLinkApplication.TAG, ex.toString());
 			}
+		}
+	}
+
+	private void buildTireAlertHistory(ArrayList alerts) throws JSONException {
+		if (VehicleDataHelper.IsTirePressureLow(mVehicleReportData)) {
+			JSONObject alertObj = new JSONObject();
+			alertObj.put("type", Constants.HISTORY_LOW_TIRE_PRESSURE);
+			alertObj.put("vin", mVehicleReportData.getVin());
+			alertObj.put("dateTime", getCurrentDateAndTime());
+			alertObj.put("name",
+					Constants.HISTORY_LOW_TIRE_PRESSURE_NAME);
+			ArrayList detailArray = new ArrayList();
+			Vector<TirePressure> lowTirePressures = VehicleDataHelper
+					.GetLowTirePressureStatuses(mVehicleReportData);
+			Iterator<TirePressure> iter = lowTirePressures.iterator();
+			while (iter.hasNext()) {
+				TirePressure tirePressure = iter.next();
+				JSONObject detail = new JSONObject();
+				detail.put("position", tirePressure.getName());
+				detail.put("status", tirePressure.getStatus().name());
+				detailArray.add(detail);
+			}
+			alerts.add(detailArray);
 		}
 	}
 
